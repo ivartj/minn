@@ -65,7 +65,7 @@ func commandAdd(cmd *cmdContext) {
 		cmd.Exit(1)
 	}
 
-	_, err = cmd.Exec("insert into schedulings (card_id, new, schedule_time, update_efactor) values (?, 1, datetime(), 0);", cardId)
+	_, err = cmd.Exec("insert into schedulings (card_id, new, schedule_time, update_efactor) values (?, 1, datetime(), 1);", cardId)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Failed to schedule card: %s.\n", err.Error())
 		cmd.Exit(1)
