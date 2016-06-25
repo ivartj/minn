@@ -108,7 +108,7 @@ func main() {
 		os.Exit(1)
 	} 
 
-	cmd := cmdNewContext(deckfilepath, argv)
+	cmd := cmdNewContext(dbOpenFile(deckfilepath), argv)
 	os.Exit(cmd.Execute(cmdfn))
 }
 

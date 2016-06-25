@@ -8,15 +8,15 @@ import (
 
 type cmdContext struct{
 	tx *sql.Tx
-	deckfilepath string
+	db db
 	Args []string
 }
 
 type cmdExit int
 
-func cmdNewContext(deckfilepath string, argv []string) *cmdContext {
+func cmdNewContext(db db, argv []string) *cmdContext {
 	return &cmdContext{
-		deckfilepath: deckfilepath,
+		db: db,
 		Args: argv,
 	}
 }
@@ -24,7 +24,7 @@ func cmdNewContext(deckfilepath string, argv []string) *cmdContext {
 func (cmd *cmdContext) initDB() {
 	if cmd.tx == nil {
 		var err error
-		cmd.tx, err = dbOpen(cmd.deckfilepath)
+		cmd.tx, err = cmd.db.Begin()
 		if err != nil {
 			panic(fmt.Errorf("Database error: %s", err.Error()))
 		}
