@@ -71,9 +71,10 @@ func commandRate(cmd *cmdContext) {
 		efactor float64
 		interval int
 		updateEfactor bool
+		updateInterval bool
 	)
-	row := cmd.QueryRow("select efactor, interval, update_efactor from cards natural join schedulings where card_id = ?", cardId)
-	err = row.Scan(&efactor, &interval, &updateEfactor)
+	row := cmd.QueryRow("select efactor, interval, update_efactor, update_interval from cards natural join schedulings where card_id = ?", cardId)
+	err = row.Scan(&efactor, &interval, &updateEfactor, &updateInterval)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Database error: %s.\n", err.Error())
 		cmd.Exit(1)
@@ -95,44 +96,49 @@ func commandRate(cmd *cmdContext) {
 		}
 	}
 
-	newInterval := 0
-	if rating >= 3 {
-		switch interval {
-		case 0:
-			newInterval = 1
-		case 1:
-			newInterval = 6
-		default:
-			newInterval = int(float64(interval) * efactor + 0.5) // rounding
+	if updateInterval {
+		newInterval := 0
+		if rating >= 3 {
+			switch interval {
+			case 0:
+				newInterval = 1
+			case 1:
+				newInterval = 6
+			default:
+				newInterval = int(float64(interval) * efactor + 0.5) // rounding
+			}
+		} else {
+			newInterval = 0
 		}
-	} else {
-		newInterval = 0
-	}
 
-	if newInterval != interval {
-		_, err := cmd.Exec(`
-			update cards
-				set interval = ?
-				where card_id = ?;
-		`, newInterval, cardId)
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "Failed to update interval: %s.\n", err.Error())
-			cmd.Exit(1)
+		if newInterval != interval {
+			_, err := cmd.Exec(`
+				update cards
+					set interval = ?
+					where card_id = ?;
+			`, newInterval, cardId)
+			if err != nil {
+				fmt.Fprintf(os.Stderr, "Failed to update interval: %s.\n", err.Error())
+				cmd.Exit(1)
+			}
 		}
+		interval = newInterval
 	}
 
 	// "After each repetition on a given day repeat again all items that
 	// scored below four in the quality assessment"
-	if newInterval < 4 {
-		newInterval = 0
+	updateInterval = true
+	if rating < 4 {
+		interval = 0
+		updateInterval = false
 	}
 
 	_, err = cmd.Exec(`
 		insert or replace into
-			schedulings (card_id, new, schedule_time, update_efactor)
+			schedulings (card_id, new, schedule_time, update_efactor, update_interval)
 		values
-			(?, 0, datetime('now', ?), ?);
-	`, cardId, fmt.Sprintf("+%d day", newInterval), rating >= 3)
+			(?, 0, datetime('now', ?), ?, ?);
+	`, cardId, fmt.Sprintf("+%d day", interval), rating >= 3, updateInterval)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Failed to add new scheduling: %s.\n", err.Error())
 		cmd.Exit(1)

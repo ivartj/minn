@@ -15,25 +15,26 @@ const (
 
 )
 
-var (
-	mainCommandMap		= map[string]func(*cmdContext){
-		"create" : commandCreate,
-		"current" : commandCurrent,
-		"front" : commandFront,
-		"back" : commandBack,
-		"rate" : commandRate,
-		"add" : commandAdd,
-		"edit" : commandEdit,
-		"remove" : commandRemove,
-	}
-)
+var mainCommands = []struct{
+	name string
+	fn func(*cmdContext)
+}{
+	{ "create", commandCreate },
+	{ "current", commandCurrent },
+	{ "front", commandFront },
+	{ "back", commandBack },
+	{ "rate", commandRate },
+	{ "add", commandAdd },
+	{ "edit", commandEdit },
+	{ "remove", commandRemove },
+}
 
 func mainUsage(out io.Writer) {
 	fmt.Fprintf(out, "Usage: %s <deck> <command> ...\n", mainProgramName)
-	for _, v := range mainCommandMap {
+	for _, v := range mainCommands {
 		tok := args.NewTokenizer([]string{"command", "-h"})
 		cmd := cmdNewContext("", tok)
-		func() { defer func() { recover() }(); v(cmd) }()
+		func() { defer func() { recover() }(); v.fn(cmd) }()
 	}
 }
 
@@ -84,28 +85,18 @@ func mainArgs() (string, string, *args.Tokenizer) {
 func main() {
 	deckfilepath, command, tok := mainArgs()
 
-	cmdfn, ok := mainCommandMap[command]
-	if !ok {
+	var cmdfn func(*cmdContext) = nil
+	for _, v := range mainCommands {
+		if v.name == command {
+			cmdfn = v.fn
+		}
+	}
+	if cmdfn == nil {
 		fmt.Fprintf(os.Stderr, "Unrecognized command, %s.\n", command)
 		os.Exit(1)
 	} 
 
 	cmd := cmdNewContext(deckfilepath, tok)
-
-	status := 0
-	defer func() {
-		x := recover()
-		switch x.(type) {
-		case cmdExit:
-			status = int(x.(cmdExit))
-		case error:
-			err := x.(error)
-			fmt.Fprintf(os.Stderr, "Panic occurred: %s.\n", err.Error())
-			status = 1
-		}
-		cmd.Rollback()
-		os.Exit(status)
-	}()
-	cmdfn(cmd)
+	os.Exit(cmd.Execute(cmdfn))
 }
 

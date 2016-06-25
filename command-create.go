@@ -72,6 +72,7 @@ func commandCreate(cmd *cmdContext) {
 			new integer not null,
 			schedule_time text not null,
 			update_efactor integer not null,
+			update_interval integer not null,
 			foreign key(card_id)
 				references cards(card_id)
 				on delete cascade

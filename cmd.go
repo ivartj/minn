@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"os"
 	"database/sql"
 	"github.com/ivartj/norske-irc-kanaler.com/args"
 )
@@ -86,4 +87,21 @@ func (cmd *cmdContext) Commit() {
 	}
 }
 
+func (cmd *cmdContext) Execute(fn func(*cmdContext)) (status int) {
+	status = 0
+	defer func() {
+		x := recover()
+		switch x.(type) {
+		case cmdExit:
+			status = int(x.(cmdExit))
+		case error:
+			err := x.(error)
+			fmt.Fprintf(os.Stderr, "Panic occurred: %s.\n", err.Error())
+			status = 1
+		}
+		cmd.Rollback()
+	}()
+	fn(cmd)
+	return status
+}
 
