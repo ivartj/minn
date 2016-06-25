@@ -5,6 +5,8 @@ import (
 	"os"
 	"fmt"
 	"io"
+	"bytes"
+	"bufio"
 )
 
 const (
@@ -18,23 +20,27 @@ const (
 var mainCommands = []struct{
 	name string
 	fn func(*cmdContext)
+	usage func(io.Writer)
 }{
-	{ "create", commandCreate },
-	{ "current", commandCurrent },
-	{ "front", commandFront },
-	{ "back", commandBack },
-	{ "rate", commandRate },
-	{ "add", commandAdd },
-	{ "edit", commandEdit },
-	{ "remove", commandRemove },
+	{ "create", commandCreate, commandCreateUsage },
+	{ "current", commandCurrent, commandCurrentUsage },
+	{ "front", commandFront, commandFrontUsage },
+	{ "back", commandBack, commandBackUsage },
+	{ "rate", commandRate, commandRateUsage },
+	{ "add", commandAdd, commandAddUsage },
+	{ "edit", commandEdit, commandEditUsage },
+	{ "remove", commandRemove, commandRemoveUsage },
 }
 
 func mainUsage(out io.Writer) {
 	fmt.Fprintf(out, "Usage: %s <deck> <command> ...\n", mainProgramName)
+
+	// Print first line, the usage string, of each subcommand
 	for _, v := range mainCommands {
-		tok := args.NewTokenizer([]string{"command", "-h"})
-		cmd := cmdNewContext("", tok)
-		func() { defer func() { recover() }(); v.fn(cmd) }()
+		buf := bytes.NewBuffer([]byte{})
+		v.usage(buf)
+		line, _ := bufio.NewReader(buf).ReadString('\n')
+		fmt.Fprint(out, line)
 	}
 }
 
