@@ -4,21 +4,20 @@ import (
 	"fmt"
 	"os"
 	"database/sql"
-	"github.com/ivartj/norske-irc-kanaler.com/args"
 )
 
 type cmdContext struct{
 	tx *sql.Tx
 	deckfilepath string
-	Args *args.Tokenizer
+	Args []string
 }
 
 type cmdExit int
 
-func cmdNewContext(deckfilepath string, tok *args.Tokenizer) *cmdContext {
+func cmdNewContext(deckfilepath string, argv []string) *cmdContext {
 	return &cmdContext{
 		deckfilepath: deckfilepath,
-		Args: tok,
+		Args: argv,
 	}
 }
 

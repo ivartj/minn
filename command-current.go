@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"io"
+	"ivartj/args"
 )
 
 func commandCurrentUsage(w io.Writer) {
@@ -12,16 +13,18 @@ func commandCurrentUsage(w io.Writer) {
 
 func commandCurrentArgs(cmd *cmdContext) {
 
-	for cmd.Args.Next() {
+	tok := args.NewTokenizer(cmd.Args)
 
-		if cmd.Args.IsOption() {
+	for tok.Next() {
 
-			switch cmd.Args.Arg() {
+		if tok.IsOption() {
+
+			switch tok.Arg() {
 			case "-h", "--help":
 				commandCurrentUsage(os.Stdout)
 				cmd.Exit(0)
 			default:
-				fmt.Fprintf(os.Stderr, "Unrecognized option, '%s'.\n", cmd.Args.Arg())
+				fmt.Fprintf(os.Stderr, "Unrecognized option, '%s'.\n", tok.Arg())
 				cmd.Exit(1)
 			}
 				
@@ -31,8 +34,8 @@ func commandCurrentArgs(cmd *cmdContext) {
 		}
 	}
 
-	if cmd.Args.Err() != nil {
-		fmt.Fprintf(os.Stderr, "Error occurred on processing command-line options: %s.\n", cmd.Args.Err().Error())
+	if tok.Err() != nil {
+		fmt.Fprintf(os.Stderr, "Error occurred on processing command-line options: %s.\n", tok.Err().Error())
 		cmd.Exit(1)
 	}
 }

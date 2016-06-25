@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"io"
+	"ivartj/args"
 )
 
 func commandAddUsage(w io.Writer) {
@@ -13,26 +14,27 @@ func commandAddUsage(w io.Writer) {
 func commandAddArgs(cmd *cmdContext) (string, string) {
 
 	plainArgs := []string{}
+	tok := args.NewTokenizer(cmd.Args)
 
-	for cmd.Args.Next() {
+	for tok.Next() {
 
-		if cmd.Args.IsOption() {
-			switch cmd.Args.Arg() {
+		if tok.IsOption() {
+			switch tok.Arg() {
 			case "-h", "--help":
 				commandAddUsage(os.Stdout)
 				cmd.Exit(0)
 			default:
-				fmt.Fprintf(os.Stderr, "Unrecognized option, '%s'.\n", cmd.Args.Arg())
+				fmt.Fprintf(os.Stderr, "Unrecognized option, '%s'.\n", tok.Arg())
 				cmd.Exit(1)
 			}
 		} else {
-			plainArgs = append(plainArgs, cmd.Args.Arg())
+			plainArgs = append(plainArgs, tok.Arg())
 		}
 
 	}
 
-	if cmd.Args.Err() != nil {
-		fmt.Fprintf(os.Stderr, "Error ccurred on parsing command-line arguments: %s.\n", cmd.Args.Err().Error())
+	if tok.Err() != nil {
+		fmt.Fprintf(os.Stderr, "Error ccurred on parsing command-line arguments: %s.\n", tok.Err().Error())
 		cmd.Exit(1)
 	}
 

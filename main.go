@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/ivartj/norske-irc-kanaler.com/args"
+	"ivartj/args"
 	"os"
 	"fmt"
 	"io"
@@ -44,7 +44,7 @@ func mainUsage(out io.Writer) {
 	}
 }
 
-func mainArgs() (string, string, *args.Tokenizer) {
+func mainArgs() (string, []string) {
 	tok := args.NewTokenizer(os.Args)
 	plainArgs := []string{}
 
@@ -85,24 +85,30 @@ func mainArgs() (string, string, *args.Tokenizer) {
 		os.Exit(1)
 	}
 
-	return plainArgs[0], plainArgs[1], tok
+	argv, noMoreOptions := tok.Remainder()
+	if noMoreOptions {
+		fmt.Fprintf(os.Stderr, "No-more-options marker (--) not permitted before subcommand.\n")
+		os.Exit(1)
+	}
+
+	return plainArgs[0], append([]string{plainArgs[1]}, argv...)
 }
 
 func main() {
-	deckfilepath, command, tok := mainArgs()
+	deckfilepath, argv := mainArgs()
 
 	var cmdfn func(*cmdContext) = nil
 	for _, v := range mainCommands {
-		if v.name == command {
+		if v.name == argv[0] {
 			cmdfn = v.fn
 		}
 	}
 	if cmdfn == nil {
-		fmt.Fprintf(os.Stderr, "Unrecognized command, %s.\n", command)
+		fmt.Fprintf(os.Stderr, "Unrecognized command, %s.\n", argv[0])
 		os.Exit(1)
 	} 
 
-	cmd := cmdNewContext(deckfilepath, tok)
+	cmd := cmdNewContext(deckfilepath, argv)
 	os.Exit(cmd.Execute(cmdfn))
 }
 

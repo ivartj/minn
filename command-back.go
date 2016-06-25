@@ -6,6 +6,7 @@ import (
 	"os"
 	"database/sql"
 	"io"
+	"ivartj/args"
 )
 
 func commandBackUsage(w io.Writer) {
@@ -15,25 +16,26 @@ func commandBackUsage(w io.Writer) {
 func commandBackArgs(cmd *cmdContext) (int, bool) {
 
 	plainArgs := []string{}
+	tok := args.NewTokenizer(cmd.Args)
 
-	for cmd.Args.Next() {
+	for tok.Next() {
 
-		if cmd.Args.IsOption() {
-			switch cmd.Args.Arg() {
+		if tok.IsOption() {
+			switch tok.Arg() {
 			case "-h", "--help":
 				commandBackUsage(os.Stdout)
 				cmd.Exit(0)
 			default:
-				fmt.Fprintf(os.Stderr, "Unrecognized option: %s.\n", cmd.Args.Arg())
+				fmt.Fprintf(os.Stderr, "Unrecognized option: %s.\n", tok.Arg())
 				cmd.Exit(1)
 			}
 		} else {
-			plainArgs = append(plainArgs, cmd.Args.Arg())
+			plainArgs = append(plainArgs, tok.Arg())
 		}
 	}
 
-	if cmd.Args.Err() != nil {
-		fmt.Fprintf(os.Stderr, "Error on processing command-line arguments: %s.\n", cmd.Args.Err().Error())
+	if tok.Err() != nil {
+		fmt.Fprintf(os.Stderr, "Error on processing command-line arguments: %s.\n", tok.Err().Error())
 		cmd.Exit(1)
 	}
 
