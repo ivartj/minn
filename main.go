@@ -17,26 +17,11 @@ const (
 
 )
 
-var mainCommands = []struct{
-	name string
-	fn func(*cmdContext)
-	usage func(io.Writer)
-}{
-	{ "create", commandCreate, commandCreateUsage },
-	{ "current", commandCurrent, commandCurrentUsage },
-	{ "front", commandFront, commandFrontUsage },
-	{ "back", commandBack, commandBackUsage },
-	{ "rate", commandRate, commandRateUsage },
-	{ "add", commandAdd, commandAddUsage },
-	{ "edit", commandEdit, commandEditUsage },
-	{ "remove", commandRemove, commandRemoveUsage },
-}
-
 func mainUsage(out io.Writer) {
 	fmt.Fprintf(out, "Usage: %s <deck> <command> ...\n", mainProgramName)
 
 	// Print first line, the usage string, of each subcommand
-	for _, v := range mainCommands {
+	for _, v := range cmdList {
 		buf := bytes.NewBuffer([]byte{})
 		v.usage(buf)
 		line, _ := bufio.NewReader(buf).ReadString('\n')
@@ -97,18 +82,7 @@ func mainArgs() (string, []string) {
 func main() {
 	deckfilepath, argv := mainArgs()
 
-	var cmdfn func(*cmdContext) = nil
-	for _, v := range mainCommands {
-		if v.name == argv[0] {
-			cmdfn = v.fn
-		}
-	}
-	if cmdfn == nil {
-		fmt.Fprintf(os.Stderr, "Unrecognized command, %s.\n", argv[0])
-		os.Exit(1)
-	} 
-
-	cmd := cmdNewContext(dbOpenFile(deckfilepath), argv)
-	os.Exit(cmd.Execute(cmdfn))
+	cmd := cmdNewContext(dbOpenFile(deckfilepath))
+	os.Exit(cmd.Run(argv))
 }
 

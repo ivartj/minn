@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"database/sql"
+	"io"
 )
 
 type cmdContext struct{
@@ -14,10 +15,25 @@ type cmdContext struct{
 
 type cmdExit int
 
-func cmdNewContext(db db, argv []string) *cmdContext {
+var cmdList = []struct{
+	name string
+	fn func(*cmdContext)
+	usage func(io.Writer)
+}{
+	{ "create", commandCreate, commandCreateUsage },
+	{ "current", commandCurrent, commandCurrentUsage },
+	{ "front", commandFront, commandFrontUsage },
+	{ "back", commandBack, commandBackUsage },
+	{ "rate", commandRate, commandRateUsage },
+	{ "add", commandAdd, commandAddUsage },
+	{ "edit", commandEdit, commandEditUsage },
+	{ "remove", commandRemove, commandRemoveUsage },
+}
+
+
+func cmdNewContext(db db) *cmdContext {
 	return &cmdContext{
 		db: db,
-		Args: argv,
 	}
 }
 
@@ -86,7 +102,26 @@ func (cmd *cmdContext) Commit() {
 	}
 }
 
-func (cmd *cmdContext) Execute(fn func(*cmdContext)) (status int) {
+func (cmd *cmdContext) Run(argv []string) (status int) {
+
+	if len(argv) < 1 {
+		fmt.Fprintf(os.Stderr, "No command given.\n")
+		return 1
+	}
+
+	var fn func(*cmdContext) = nil
+	for _, v := range cmdList {
+		if v.name == argv[0] {
+			fn = v.fn
+			break
+		}
+	}
+
+	if fn == nil {
+		fmt.Fprintf(os.Stderr, "Unrecognized command, '%s'.\n", argv[0])
+		return 1
+	}
+
 	status = 0
 	defer func() {
 		x := recover()
@@ -100,7 +135,11 @@ func (cmd *cmdContext) Execute(fn func(*cmdContext)) (status int) {
 		}
 		cmd.Rollback()
 	}()
+
+	cmd.tx = nil
+	cmd.Args = argv
 	fn(cmd)
+
 	return status
 }
 
