@@ -4,16 +4,19 @@ import (
 	"fmt"
 	"strconv"
 	"os"
-	"database/sql"
 	"io"
 	"ivartj/args"
 )
 
-func commandBackUsage(w io.Writer) {
-	fmt.Fprintf(w, "Usage: %s <deck> back [ <card-id> ]\n", mainProgramName)
+func init() {
+	cmdRegister("remove", cmdRemove, cmdRemoveUsage)
 }
 
-func commandBackArgs(cmd *cmdContext) (int, bool) {
+func cmdRemoveUsage(w io.Writer) {
+	fmt.Fprintf(w, "Usage: %s <deck> remove [ <card-id> ]\n", mainProgramName)
+}
+
+func cmdRemoveArgs(cmd *cmdContext) (int, bool) {
 
 	plainArgs := []string{}
 	tok := args.NewTokenizer(cmd.Args)
@@ -23,7 +26,7 @@ func commandBackArgs(cmd *cmdContext) (int, bool) {
 		if tok.IsOption() {
 			switch tok.Arg() {
 			case "-h", "--help":
-				commandBackUsage(os.Stdout)
+				cmdRemoveUsage(os.Stdout)
 				cmd.Exit(0)
 			default:
 				fmt.Fprintf(os.Stderr, "Unrecognized option: %s.\n", tok.Arg())
@@ -51,14 +54,14 @@ func commandBackArgs(cmd *cmdContext) (int, bool) {
 		return cardId, false
 	}
 
-	commandBackUsage(os.Stderr)
+	cmdRemoveUsage(os.Stderr)
 	cmd.Exit(1)
 	return 0, false
 }
 
-func commandBack(cmd *cmdContext) {
+func cmdRemove(cmd *cmdContext) {
 
-	cardId, current := commandBackArgs(cmd)
+	cardId, current := cmdRemoveArgs(cmd)
 
 	var err error
 	if current {
@@ -68,19 +71,22 @@ func commandBack(cmd *cmdContext) {
 		}
 	}
 
-	row := cmd.QueryRow("select back from cards where card_id = ?;", cardId)
-	var back string
-	err = row.Scan(&back)
-	if err == sql.ErrNoRows {
-		fmt.Fprintf(os.Stderr, "No card by that card ID.\n");
-		cmd.Exit(1)
-	}
+	res, err := cmd.Exec("delete from cards where card_id = ?;", cardId)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Database query error: %s.\n", err.Error())
+		fmt.Fprintf(os.Stderr, "Database error: %s.\n", err.Error())
 		cmd.Exit(1)
 	}
 
-	fmt.Println(back)
+	rowsAffected, err := res.RowsAffected()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Unable to get number of rows affected: %s.\n", err.Error())
+		cmd.Exit(1)
+	}
+
+	if rowsAffected == 0 {
+		fmt.Fprintf(os.Stderr, "No card by that card ID.\n")
+		cmd.Exit(1)
+	}
 
 	cmd.Commit()
 }

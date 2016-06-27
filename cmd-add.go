@@ -7,11 +7,15 @@ import (
 	"ivartj/args"
 )
 
-func commandAddUsage(w io.Writer) {
+func init() {
+	cmdRegister("add", cmdAdd, cmdAddUsage)
+}
+
+func cmdAddUsage(w io.Writer) {
 	fmt.Fprintf(w, "Usage: %s <deck> add <front> <back>\n", mainProgramName)
 }
 
-func commandAddArgs(cmd *cmdContext) (string, string) {
+func cmdAddArgs(cmd *cmdContext) (string, string) {
 
 	plainArgs := []string{}
 	tok := args.NewTokenizer(cmd.Args)
@@ -21,7 +25,7 @@ func commandAddArgs(cmd *cmdContext) (string, string) {
 		if tok.IsOption() {
 			switch tok.Arg() {
 			case "-h", "--help":
-				commandAddUsage(os.Stdout)
+				cmdAddUsage(os.Stdout)
 				cmd.Exit(0)
 			default:
 				fmt.Fprintf(os.Stderr, "Unrecognized option, '%s'.\n", tok.Arg())
@@ -39,17 +43,17 @@ func commandAddArgs(cmd *cmdContext) (string, string) {
 	}
 
 	if len(plainArgs) != 2 {
-		commandAddUsage(os.Stderr)
+		cmdAddUsage(os.Stderr)
 		cmd.Exit(1)
 	}
 
 	return plainArgs[0], plainArgs[1]
 }
 
-func commandAdd(cmd *cmdContext) {
+func cmdAdd(cmd *cmdContext) {
 	// TODO: Check against duplicate card fronts
 
-	front, back := commandAddArgs(cmd)
+	front, back := cmdAddArgs(cmd)
 
 	res, err := cmd.Exec(`
 		insert into

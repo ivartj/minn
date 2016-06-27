@@ -4,7 +4,7 @@ import (
 	"testing"
 )
 
-func TestCommandCreate(t *testing.T) {
+func TestCmdCreate(t *testing.T) {
 
 	cmd := cmdNewContext(dbOpenTemp())
 	status := cmd.Run([]string{ "create" })

@@ -4,7 +4,7 @@ import (
 	"testing"
 )
 
-func TestCommandAdd(t *testing.T) {
+func TestCmdAdd(t *testing.T) {
 
 	db := dbOpenTemp()
 

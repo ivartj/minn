@@ -15,21 +15,17 @@ type cmdContext struct{
 
 type cmdExit int
 
-var cmdList = []struct{
+var cmdList = []cmdListItem{}
+
+type cmdListItem struct{
 	name string
 	fn func(*cmdContext)
 	usage func(io.Writer)
-}{
-	{ "create", commandCreate, commandCreateUsage },
-	{ "current", commandCurrent, commandCurrentUsage },
-	{ "front", commandFront, commandFrontUsage },
-	{ "back", commandBack, commandBackUsage },
-	{ "rate", commandRate, commandRateUsage },
-	{ "add", commandAdd, commandAddUsage },
-	{ "edit", commandEdit, commandEditUsage },
-	{ "remove", commandRemove, commandRemoveUsage },
 }
 
+func cmdRegister(name string, fn func(*cmdContext), usage func(io.Writer)) {
+	cmdList = append(cmdList, cmdListItem{name, fn, usage})
+}
 
 func cmdNewContext(db db) *cmdContext {
 	return &cmdContext{

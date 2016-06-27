@@ -7,11 +7,15 @@ import (
 	"ivartj/args"
 )
 
-func commandCurrentUsage(w io.Writer) {
+func init() {
+	cmdRegister("current", cmdCurrent, cmdCurrentUsage)
+}
+
+func cmdCurrentUsage(w io.Writer) {
 	fmt.Fprintf(w, "Usage: %s <deck> current\n", mainProgramName)
 }
 
-func commandCurrentArgs(cmd *cmdContext) {
+func cmdCurrentArgs(cmd *cmdContext) {
 
 	tok := args.NewTokenizer(cmd.Args)
 
@@ -21,7 +25,7 @@ func commandCurrentArgs(cmd *cmdContext) {
 
 			switch tok.Arg() {
 			case "-h", "--help":
-				commandCurrentUsage(os.Stdout)
+				cmdCurrentUsage(os.Stdout)
 				cmd.Exit(0)
 			default:
 				fmt.Fprintf(os.Stderr, "Unrecognized option, '%s'.\n", tok.Arg())
@@ -29,7 +33,7 @@ func commandCurrentArgs(cmd *cmdContext) {
 			}
 				
 		} else {
-			commandCurrentUsage(os.Stderr)
+			cmdCurrentUsage(os.Stderr)
 			cmd.Exit(1)
 		}
 	}
@@ -40,9 +44,9 @@ func commandCurrentArgs(cmd *cmdContext) {
 	}
 }
 
-func commandCurrent(cmd *cmdContext) {
+func cmdCurrent(cmd *cmdContext) {
 
-	commandCurrentArgs(cmd)
+	cmdCurrentArgs(cmd)
 
 	cardId, err := sm2CurrentCard(cmd.DB())
 	if err != nil {

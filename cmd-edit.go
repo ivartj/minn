@@ -8,11 +8,15 @@ import (
 	"ivartj/args"
 )
 
-func commandEditUsage(w io.Writer) {
+func init() {
+	cmdRegister("edit", cmdEdit, cmdEditUsage)
+}
+
+func cmdEditUsage(w io.Writer) {
 	fmt.Fprintf(w, "Usage: %s <deck> edit <card-id> <front> <back>\n", mainProgramName)
 }
 
-func commandEditArgs(cmd *cmdContext) (int, string, string) {
+func cmdEditArgs(cmd *cmdContext) (int, string, string) {
 
 	plainArgs := []string{}
 	tok := args.NewTokenizer(cmd.Args)
@@ -22,7 +26,7 @@ func commandEditArgs(cmd *cmdContext) (int, string, string) {
 		if tok.IsOption() {
 			switch tok.Arg() {
 			case "-h", "--help":
-				commandEditUsage(os.Stdout)
+				cmdEditUsage(os.Stdout)
 				cmd.Exit(0)
 			default:
 				fmt.Fprintf(os.Stderr, "Unrecognized option, '%s'.\n", tok.Arg())
@@ -40,7 +44,7 @@ func commandEditArgs(cmd *cmdContext) (int, string, string) {
 	}
 
 	if len(plainArgs) != 3 {
-		commandEditUsage(os.Stderr)
+		cmdEditUsage(os.Stderr)
 		cmd.Exit(1)
 	}
 
@@ -54,9 +58,9 @@ func commandEditArgs(cmd *cmdContext) (int, string, string) {
 	return cardId, plainArgs[1], plainArgs[2]
 }
 
-func commandEdit(cmd *cmdContext) {
+func cmdEdit(cmd *cmdContext) {
 
-	cardId, front, back := commandEditArgs(cmd)
+	cardId, front, back := cmdEditArgs(cmd)
 
 	res, err := cmd.Exec("update cards set front = ?, back = ? where card_id = ?;", front, back, cardId)
 	if err != nil {

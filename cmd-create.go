@@ -7,11 +7,15 @@ import (
 	"ivartj/args"
 )
 
-func commandCreateUsage(w io.Writer) {
+func init() {
+	cmdRegister("create", cmdCreate, cmdCreateUsage)
+}
+
+func cmdCreateUsage(w io.Writer) {
 	fmt.Fprintf(w, "Usage: %s <deck> create\n", mainProgramName)
 }
 
-func commandCreateArgs(cmd *cmdContext) {
+func cmdCreateArgs(cmd *cmdContext) {
 
 	tok := args.NewTokenizer(cmd.Args)
 
@@ -21,7 +25,7 @@ func commandCreateArgs(cmd *cmdContext) {
 
 			switch tok.Arg() {
 			case "-h", "--help":
-				commandCreateUsage(os.Stdout)
+				cmdCreateUsage(os.Stdout)
 				cmd.Exit(0)
 			default:
 				fmt.Fprintf(os.Stderr, "Unrecognized option, '%s'.\n", tok.Arg())
@@ -29,7 +33,7 @@ func commandCreateArgs(cmd *cmdContext) {
 			}
 				
 		} else {
-			commandCreateUsage(os.Stderr)
+			cmdCreateUsage(os.Stderr)
 			cmd.Exit(1)
 		}
 	}
@@ -40,9 +44,9 @@ func commandCreateArgs(cmd *cmdContext) {
 	}
 }
 
-func commandCreate(cmd *cmdContext) {
+func cmdCreate(cmd *cmdContext) {
 
-	commandCreateArgs(cmd)
+	cmdCreateArgs(cmd)
 
 	_, err := cmd.Exec(`
 

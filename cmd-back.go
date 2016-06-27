@@ -5,15 +5,19 @@ import (
 	"strconv"
 	"os"
 	"database/sql"
-	"ivartj/args"
 	"io"
+	"ivartj/args"
 )
 
-func commandFrontUsage(w io.Writer) {
-	fmt.Fprintf(w, "Usage: %s <deck> front [ <card-id> ]\n", mainProgramName)
+func init() {
+	cmdRegister("back", cmdBack, cmdBackUsage)
 }
 
-func commandFrontArgs(cmd *cmdContext) (int, bool) {
+func cmdBackUsage(w io.Writer) {
+	fmt.Fprintf(w, "Usage: %s <deck> back [ <card-id> ]\n", mainProgramName)
+}
+
+func cmdBackArgs(cmd *cmdContext) (int, bool) {
 
 	plainArgs := []string{}
 	tok := args.NewTokenizer(cmd.Args)
@@ -23,7 +27,7 @@ func commandFrontArgs(cmd *cmdContext) (int, bool) {
 		if tok.IsOption() {
 			switch tok.Arg() {
 			case "-h", "--help":
-				commandFrontUsage(os.Stdout)
+				cmdBackUsage(os.Stdout)
 				cmd.Exit(0)
 			default:
 				fmt.Fprintf(os.Stderr, "Unrecognized option: %s.\n", tok.Arg())
@@ -51,14 +55,14 @@ func commandFrontArgs(cmd *cmdContext) (int, bool) {
 		return cardId, false
 	}
 
-	commandFrontUsage(os.Stderr)
+	cmdBackUsage(os.Stderr)
 	cmd.Exit(1)
 	return 0, false
 }
 
-func commandFront(cmd *cmdContext) {
+func cmdBack(cmd *cmdContext) {
 
-	cardId, current := commandFrontArgs(cmd)
+	cardId, current := cmdBackArgs(cmd)
 
 	var err error
 	if current {
@@ -68,9 +72,9 @@ func commandFront(cmd *cmdContext) {
 		}
 	}
 
-	row := cmd.QueryRow("select front from cards where card_id = ?;", cardId)
-	var front string
-	err = row.Scan(&front)
+	row := cmd.QueryRow("select back from cards where card_id = ?;", cardId)
+	var back string
+	err = row.Scan(&back)
 	if err == sql.ErrNoRows {
 		fmt.Fprintf(os.Stderr, "No card by that card ID.\n");
 		cmd.Exit(1)
@@ -80,7 +84,7 @@ func commandFront(cmd *cmdContext) {
 		cmd.Exit(1)
 	}
 
-	fmt.Println(front)
+	fmt.Println(back)
 
 	cmd.Commit()
 }

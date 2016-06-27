@@ -8,11 +8,15 @@ import (
 	"ivartj/args"
 )
 
-func commandRateUsage(w io.Writer) {
+func init() {
+	cmdRegister("rate", cmdRate, cmdRateUsage)
+}
+
+func cmdRateUsage(w io.Writer) {
 	fmt.Fprintf(w, "Usage: %s <deck> rate <rating>\n", mainProgramName)
 }
 
-func commandRateArgs(cmd *cmdContext) int {
+func cmdRateArgs(cmd *cmdContext) int {
 
 	plainArgs := []string{}
 	tok := args.NewTokenizer(cmd.Args)
@@ -23,7 +27,7 @@ func commandRateArgs(cmd *cmdContext) int {
 
 			switch tok.Arg() {
 			case "-h", "--help":
-				commandRateUsage(os.Stdout)
+				cmdRateUsage(os.Stdout)
 				cmd.Exit(0)
 			default:
 				fmt.Fprintf(os.Stderr, "Unrecognized option, '%s'.\n", tok.Arg())
@@ -41,7 +45,7 @@ func commandRateArgs(cmd *cmdContext) int {
 	}
 
 	if len(plainArgs) != 1 {
-		commandRateUsage(os.Stderr)
+		cmdRateUsage(os.Stderr)
 		cmd.Exit(1)
 	}
 
@@ -59,9 +63,9 @@ func commandRateArgs(cmd *cmdContext) int {
 	return rating
 }
 
-func commandRate(cmd *cmdContext) {
+func cmdRate(cmd *cmdContext) {
 
-	rating := commandRateArgs(cmd)
+	rating := cmdRateArgs(cmd)
 
 	cardId, err := sm2CurrentCard(cmd.DB())
 	if err != nil {
