@@ -13,7 +13,7 @@ func init() {
 }
 
 func cmdBackUsage(w io.Writer) {
-	fmt.Fprintf(w, "Usage: %s <deck> back [ <card-id> ]\n", mainProgramName)
+	fmt.Fprintf(w, "Usage: %s back [ <card-id> ]\n", mainProgramName)
 }
 
 func cmdBackArgs(cmd *cmdContext) (int, bool) {

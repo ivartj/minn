@@ -14,11 +14,14 @@ const (
 	mainProgramVersion	= "0.1-SNAPSHOT"
 
 	mainSchemaVersion	= "0.1.1"
+)
 
+var (
+	mainConfDeckPath	= "./repete.deck"
 )
 
 func mainUsage(out io.Writer) {
-	fmt.Fprintf(out, "Usage: %s <deck> <command> ...\n", mainProgramName)
+	fmt.Fprintf(out, "Usage: %s [ -d <deck> ] <command> ...\n", mainProgramName)
 
 	// Print first line, the usage string, of each subcommand
 	for _, v := range cmdList {
@@ -29,9 +32,10 @@ func mainUsage(out io.Writer) {
 	}
 }
 
-func mainArgs() (string, []string) {
+func mainArgs() ([]string) {
 	tok := args.NewTokenizer(os.Args)
-	plainArgs := []string{}
+	var command string
+	commandGiven := false
 
 	for tok.Next() {
 
@@ -46,16 +50,23 @@ func mainArgs() (string, []string) {
 				fmt.Printf("%s version %s\n")
 				os.Exit(0)
 
+			case "-d", "--deck":
+				param, err := tok.TakeParameter()
+				if err != nil {
+					fmt.Fprintf(os.Stderr, "Failed to get parameter to '%s' option: %s.\n", tok.Arg(), err.Error())
+					os.Exit(1)
+				}
+				mainConfDeckPath = param
+
 			default:
 				fmt.Fprintf(os.Stderr, "Unrecognized option, %s.\n", tok.Arg())
 				os.Exit(1)
 			}
 
 		} else {
-			plainArgs = append(plainArgs, tok.Arg())
-			if(len(plainArgs) == 2) {
-				break
-			}
+			command = tok.Arg()
+			commandGiven = true
+			break
 		}
 
 	}
@@ -65,7 +76,7 @@ func mainArgs() (string, []string) {
 		os.Exit(1)
 	}
 
-	if(len(plainArgs) < 2) {
+	if(!commandGiven) {
 		mainUsage(os.Stderr)
 		os.Exit(1)
 	}
@@ -76,13 +87,13 @@ func mainArgs() (string, []string) {
 		os.Exit(1)
 	}
 
-	return plainArgs[0], append([]string{plainArgs[1]}, argv...)
+	return append([]string{command}, argv...)
 }
 
 func main() {
-	deckfilepath, argv := mainArgs()
+	argv := mainArgs()
 
-	cmd := cmdNewContext(dbOpenFile(deckfilepath))
+	cmd := cmdNewContext(dbOpenFile(mainConfDeckPath))
 	iargv := make([]interface{}, len(argv))
 	for i, v := range argv {
 		iargv[i] = v

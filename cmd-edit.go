@@ -12,7 +12,7 @@ func init() {
 }
 
 func cmdEditUsage(w io.Writer) {
-	fmt.Fprintf(w, "Usage: %s <deck> edit <card-id> <front> <back>\n", mainProgramName)
+	fmt.Fprintf(w, "Usage: %s edit <card-id> <front> <back>\n", mainProgramName)
 }
 
 func cmdEditArgs(cmd *cmdContext) (int, string, string) {

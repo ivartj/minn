@@ -12,7 +12,7 @@ func init() {
 }
 
 func cmdRateUsage(w io.Writer) {
-	fmt.Fprintf(w, "Usage: %s <deck> rate <rating>\n", mainProgramName)
+	fmt.Fprintf(w, "Usage: %s rate <rating>\n", mainProgramName)
 }
 
 func cmdRateArgs(cmd *cmdContext) int {

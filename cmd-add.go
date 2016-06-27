@@ -11,7 +11,7 @@ func init() {
 }
 
 func cmdAddUsage(w io.Writer) {
-	fmt.Fprintf(w, "Usage: %s <deck> add <front> <back>\n", mainProgramName)
+	fmt.Fprintf(w, "Usage: %s add <front> <back>\n", mainProgramName)
 }
 
 func cmdAddArgs(cmd *cmdContext) (string, string) {

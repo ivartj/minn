@@ -11,7 +11,7 @@ func init() {
 }
 
 func cmdCurrentUsage(w io.Writer) {
-	fmt.Fprintf(w, "Usage: %s <deck> current\n", mainProgramName)
+	fmt.Fprintf(w, "Usage: %s current\n", mainProgramName)
 }
 
 func cmdCurrentArgs(cmd *cmdContext) {

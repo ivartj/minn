@@ -13,7 +13,7 @@ func init() {
 }
 
 func cmdFrontUsage(w io.Writer) {
-	fmt.Fprintf(w, "Usage: %s <deck> front [ <card-id> ]\n", mainProgramName)
+	fmt.Fprintf(w, "Usage: %s front [ <card-id> ]\n", mainProgramName)
 }
 
 func cmdFrontArgs(cmd *cmdContext) (int, bool) {

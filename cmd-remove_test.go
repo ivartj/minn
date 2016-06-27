@@ -38,5 +38,27 @@ func TestCmdRemove(t *testing.T) {
 	if status == 0 {
 		t.Fatalf("'front' command unexpectedly succeeds on removed card ID.\n")
 	}
+
+	buf = bytes.NewBuffer([]byte{})
+	cmd.Stdout = buf
+	status = cmd.Run("add", "FRONT", "BACK")
+	if status != 0 {
+		t.Fatalf("Failed to add test card.\n")
+	}
+
+	_, err = fmt.Fscanln(buf, &cardId)
+	if err != nil {
+		t.Fatalf("Failed to read test card ID: %s.\n", err.Error())
+	}
+
+	status = cmd.Run("remove")
+	if status != 0 {
+		t.Fatalf("Non-zero exit status on removing card.\n")
+	}
+
+	status = cmd.Run("front", cardId)
+	if status == 0 {
+		t.Fatalf("'front' command unexpectedly succeeds on removed card ID.\n")
+	}
 }
 

@@ -12,7 +12,7 @@ func init() {
 }
 
 func cmdRemoveUsage(w io.Writer) {
-	fmt.Fprintf(w, "Usage: %s <deck> remove [ <card-id> ]\n", mainProgramName)
+	fmt.Fprintf(w, "Usage: %s remove [ <card-id> ]\n", mainProgramName)
 }
 
 func cmdRemoveArgs(cmd *cmdContext) (int, bool) {
