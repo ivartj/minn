@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"os"
 	"io"
 	"ivartj/args"
 )
@@ -25,11 +24,10 @@ func cmdAddArgs(cmd *cmdContext) (string, string) {
 		if tok.IsOption() {
 			switch tok.Arg() {
 			case "-h", "--help":
-				cmdAddUsage(os.Stdout)
+				cmdAddUsage(cmd.Stdout)
 				cmd.Exit(0)
 			default:
-				fmt.Fprintf(os.Stderr, "Unrecognized option, '%s'.\n", tok.Arg())
-				cmd.Exit(1)
+				cmd.Fatalf("Unrecognized option, '%s'.\n", tok.Arg())
 			}
 		} else {
 			plainArgs = append(plainArgs, tok.Arg())
@@ -38,12 +36,11 @@ func cmdAddArgs(cmd *cmdContext) (string, string) {
 	}
 
 	if tok.Err() != nil {
-		fmt.Fprintf(os.Stderr, "Error ccurred on parsing command-line arguments: %s.\n", tok.Err().Error())
-		cmd.Exit(1)
+		cmd.Fatalf("Error ccurred on parsing command-line arguments: %s.\n", tok.Err().Error())
 	}
 
 	if len(plainArgs) != 2 {
-		cmdAddUsage(os.Stderr)
+		cmdAddUsage(cmd.Stderr)
 		cmd.Exit(1)
 	}
 
@@ -61,23 +58,20 @@ func cmdAdd(cmd *cmdContext) {
 			values (2.5, 0, ?, ?, datetime());
 	`, front, back)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Database error: %s.\n", err.Error())
-		cmd.Exit(1)
+		cmd.Fatalf("Database error: %s.\n", err.Error())
 	}
 
 	cardId, err := res.LastInsertId()
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Failed to get card ID from database engine: %s.\n", err.Error())
-		cmd.Exit(1)
+		cmd.Fatalf("Failed to get card ID from database engine: %s.\n", err.Error())
 	}
 
 	_, err = cmd.Exec("insert into schedulings (card_id, new, schedule_time, update_efactor, update_interval) values (?, 1, datetime(), 1, 1);", cardId)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Failed to schedule card: %s.\n", err.Error())
-		cmd.Exit(1)
+		cmd.Fatalf("Failed to schedule card: %s.\n", err.Error())
 	}
 
-	fmt.Printf("%d\n", cardId)
+	cmd.Println(cardId)
 
 	cmd.Commit()
 }

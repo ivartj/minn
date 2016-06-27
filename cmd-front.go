@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"strconv"
-	"os"
 	"database/sql"
 	"ivartj/args"
 	"io"
@@ -27,11 +26,10 @@ func cmdFrontArgs(cmd *cmdContext) (int, bool) {
 		if tok.IsOption() {
 			switch tok.Arg() {
 			case "-h", "--help":
-				cmdFrontUsage(os.Stdout)
+				cmdFrontUsage(cmd.Stdout)
 				cmd.Exit(0)
 			default:
-				fmt.Fprintf(os.Stderr, "Unrecognized option: %s.\n", tok.Arg())
-				cmd.Exit(1)
+				cmd.Fatalf("Unrecognized option: %s.\n", tok.Arg())
 			}
 		} else {
 			plainArgs = append(plainArgs, tok.Arg())
@@ -39,8 +37,7 @@ func cmdFrontArgs(cmd *cmdContext) (int, bool) {
 	}
 
 	if tok.Err() != nil {
-		fmt.Fprintf(os.Stderr, "Error on processing command-line arguments: %s.\n", tok.Err().Error())
-		cmd.Exit(1)
+		cmd.Fatalf("Error on processing command-line arguments: %s.\n", tok.Err().Error())
 	}
 
 	switch(len(plainArgs)) {
@@ -49,14 +46,15 @@ func cmdFrontArgs(cmd *cmdContext) (int, bool) {
 	case 1:
 		cardId, err := strconv.Atoi(plainArgs[0])
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "Failed to parse Card ID: %s.\n", err.Error())
-			cmd.Exit(1)
+			cmd.Fatalf("Failed to parse Card ID: %s.\n", err.Error())
 		}
 		return cardId, false
 	}
 
-	cmdFrontUsage(os.Stderr)
+	cmdFrontUsage(cmd.Stderr)
 	cmd.Exit(1)
+
+	// unreachable
 	return 0, false
 }
 
@@ -76,15 +74,13 @@ func cmdFront(cmd *cmdContext) {
 	var front string
 	err = row.Scan(&front)
 	if err == sql.ErrNoRows {
-		fmt.Fprintf(os.Stderr, "No card by that card ID.\n");
-		cmd.Exit(1)
+		cmd.Fatalf("No card by that card ID.\n");
 	}
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Database query error: %s.\n", err.Error())
-		cmd.Exit(1)
+		cmd.Fatalf("Database query error: %s.\n", err.Error())
 	}
 
-	fmt.Println(front)
+	cmd.Println(front)
 
 	cmd.Commit()
 }

@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"strconv"
-	"os"
 	"io"
 	"ivartj/args"
 )
@@ -26,11 +25,10 @@ func cmdRemoveArgs(cmd *cmdContext) (int, bool) {
 		if tok.IsOption() {
 			switch tok.Arg() {
 			case "-h", "--help":
-				cmdRemoveUsage(os.Stdout)
+				cmdRemoveUsage(cmd.Stdout)
 				cmd.Exit(0)
 			default:
-				fmt.Fprintf(os.Stderr, "Unrecognized option: %s.\n", tok.Arg())
-				cmd.Exit(1)
+				cmd.Fatalf("Unrecognized option: %s.\n", tok.Arg())
 			}
 		} else {
 			plainArgs = append(plainArgs, tok.Arg())
@@ -38,8 +36,7 @@ func cmdRemoveArgs(cmd *cmdContext) (int, bool) {
 	}
 
 	if tok.Err() != nil {
-		fmt.Fprintf(os.Stderr, "Error on processing command-line arguments: %s.\n", tok.Err().Error())
-		cmd.Exit(1)
+		cmd.Fatalf("Error on processing command-line arguments: %s.\n", tok.Err().Error())
 	}
 
 	switch(len(plainArgs)) {
@@ -48,13 +45,13 @@ func cmdRemoveArgs(cmd *cmdContext) (int, bool) {
 	case 1:
 		cardId, err := strconv.Atoi(plainArgs[0])
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "Failed to parse Card ID: %s.\n", err.Error())
+			cmd.Fatalf("Failed to parse Card ID: %s.\n", err.Error())
 			cmd.Exit(1)
 		}
 		return cardId, false
 	}
 
-	cmdRemoveUsage(os.Stderr)
+	cmdRemoveUsage(cmd.Stderr)
 	cmd.Exit(1)
 	return 0, false
 }
@@ -73,19 +70,16 @@ func cmdRemove(cmd *cmdContext) {
 
 	res, err := cmd.Exec("delete from cards where card_id = ?;", cardId)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Database error: %s.\n", err.Error())
-		cmd.Exit(1)
+		cmd.Fatalf("Database error: %s.\n", err.Error())
 	}
 
 	rowsAffected, err := res.RowsAffected()
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Unable to get number of rows affected: %s.\n", err.Error())
-		cmd.Exit(1)
+		cmd.Fatalf("Unable to get number of rows affected: %s.\n", err.Error())
 	}
 
 	if rowsAffected == 0 {
-		fmt.Fprintf(os.Stderr, "No card by that card ID.\n")
-		cmd.Exit(1)
+		cmd.Fatalf("No card by that card ID.\n")
 	}
 
 	cmd.Commit()

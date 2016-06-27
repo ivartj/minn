@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"strconv"
-	"os"
 	"io"
 	"ivartj/args"
 )
@@ -26,11 +25,10 @@ func cmdEditArgs(cmd *cmdContext) (int, string, string) {
 		if tok.IsOption() {
 			switch tok.Arg() {
 			case "-h", "--help":
-				cmdEditUsage(os.Stdout)
+				cmdEditUsage(cmd.Stdout)
 				cmd.Exit(0)
 			default:
-				fmt.Fprintf(os.Stderr, "Unrecognized option, '%s'.\n", tok.Arg())
-				cmd.Exit(1)
+				cmd.Fatalf("Unrecognized option, '%s'.\n", tok.Arg())
 			}
 		} else {
 			plainArgs = append(plainArgs, tok.Arg())
@@ -39,20 +37,18 @@ func cmdEditArgs(cmd *cmdContext) (int, string, string) {
 	}
 
 	if tok.Err() != nil {
-		fmt.Fprintf(os.Stderr, "Error ccurred on parsing command-line arguments: %s.\n", tok.Err().Error())
-		cmd.Exit(1)
+		cmd.Fatalf("Error ccurred on parsing command-line arguments: %s.\n", tok.Err().Error())
 	}
 
 	if len(plainArgs) != 3 {
-		cmdEditUsage(os.Stderr)
+		cmdEditUsage(cmd.Stderr)
 		cmd.Exit(1)
 	}
 
 	cardId, err := strconv.Atoi(plainArgs[0])
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Failed to parse card ID: %s.\n", err.Error())
-		cmd.Exit(1)
+		cmd.Fatalf("Failed to parse card ID: %s.\n", err.Error())
 	}
 
 	return cardId, plainArgs[1], plainArgs[2]
@@ -64,19 +60,16 @@ func cmdEdit(cmd *cmdContext) {
 
 	res, err := cmd.Exec("update cards set front = ?, back = ? where card_id = ?;", front, back, cardId)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Database error: %s.\n", err.Error())
-		cmd.Exit(1)
+		cmd.Fatalf("Database error: %s.\n", err.Error())
 	}
 
 	rowsAffected, err := res.RowsAffected()
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Unable to get number of rows affected: %s.\n", err.Error())
-		cmd.Exit(1)
+		cmd.Fatalf("Unable to get number of rows affected: %s.\n", err.Error())
 	}
 
 	if rowsAffected == 0 {
-		fmt.Fprintf(os.Stderr, "No card by that ID.\n")
-		cmd.Exit(1)
+		cmd.Fatalf("No card by that ID.\n")
 	}
 
 	cmd.Commit()

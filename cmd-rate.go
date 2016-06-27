@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"os"
 	"strconv"
 	"io"
 	"ivartj/args"
@@ -27,11 +26,10 @@ func cmdRateArgs(cmd *cmdContext) int {
 
 			switch tok.Arg() {
 			case "-h", "--help":
-				cmdRateUsage(os.Stdout)
+				cmdRateUsage(cmd.Stdout)
 				cmd.Exit(0)
 			default:
-				fmt.Fprintf(os.Stderr, "Unrecognized option, '%s'.\n", tok.Arg())
-				cmd.Exit(1)
+				cmd.Fatalf("Unrecognized option, '%s'.\n", tok.Arg())
 			}
 
 		} else {
@@ -40,24 +38,21 @@ func cmdRateArgs(cmd *cmdContext) int {
 	}
 
 	if tok.Err() != nil {
-		fmt.Fprintf(os.Stderr, "Error on parsing command-line arguments: %s.\n", tok.Err().Error())
-		cmd.Exit(1)
+		cmd.Fatalf("Error on parsing command-line arguments: %s.\n", tok.Err().Error())
 	}
 
 	if len(plainArgs) != 1 {
-		cmdRateUsage(os.Stderr)
+		cmdRateUsage(cmd.Stderr)
 		cmd.Exit(1)
 	}
 
 	rating, err := strconv.Atoi(plainArgs[0])
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Failed to parse rating: %s.\n", err.Error())
-		cmd.Exit(1)
+		cmd.Fatalf("Failed to parse rating: %s.\n", err.Error())
 	}
 
 	if rating < 0 || rating > 5 {
-		fmt.Fprintf(os.Stderr, "Rating must be 0 to 5.\n")
-		cmd.Exit(1)
+		cmd.Fatalf("Rating must be 0 to 5.\n")
 	}
 
 	return rating
@@ -69,8 +64,7 @@ func cmdRate(cmd *cmdContext) {
 
 	cardId, err := sm2CurrentCard(cmd.DB())
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Failed to get current card ID: %s.\n", err.Error())
-		cmd.Exit(1)
+		cmd.Fatalf("Failed to get current card ID: %s.\n", err.Error())
 	}
 
 	var (
@@ -82,8 +76,7 @@ func cmdRate(cmd *cmdContext) {
 	row := cmd.QueryRow("select efactor, interval, update_efactor, update_interval from cards natural join schedulings where card_id = ?", cardId)
 	err = row.Scan(&efactor, &interval, &updateEfactor, &updateInterval)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Database error: %s.\n", err.Error())
-		cmd.Exit(1)
+		cmd.Fatalf("Database error: %s.\n", err.Error())
 	}
 
 	if updateEfactor {
@@ -97,8 +90,7 @@ func cmdRate(cmd *cmdContext) {
 				where card_id = ?;
 		`, efactor, cardId)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "Failed to update E-factor: %s.\n", err.Error())
-			cmd.Exit(1)
+			cmd.Fatalf("Failed to update E-factor: %s.\n", err.Error())
 		}
 	}
 
@@ -124,8 +116,7 @@ func cmdRate(cmd *cmdContext) {
 					where card_id = ?;
 			`, newInterval, cardId)
 			if err != nil {
-				fmt.Fprintf(os.Stderr, "Failed to update interval: %s.\n", err.Error())
-				cmd.Exit(1)
+				cmd.Fatalf("Failed to update interval: %s.\n", err.Error())
 			}
 		}
 		interval = newInterval
@@ -146,7 +137,7 @@ func cmdRate(cmd *cmdContext) {
 			(?, 0, datetime('now', ?), ?, ?);
 	`, cardId, fmt.Sprintf("+%d day", interval), rating >= 3, updateInterval)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Failed to add new scheduling: %s.\n", err.Error())
+		cmd.Fatalf("Failed to add new scheduling: %s.\n", err.Error())
 		cmd.Exit(1)
 	}
 

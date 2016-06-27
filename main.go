@@ -83,6 +83,6 @@ func main() {
 	deckfilepath, argv := mainArgs()
 
 	cmd := cmdNewContext(dbOpenFile(deckfilepath))
-	os.Exit(cmd.Run(argv))
+	os.Exit(cmd.Run(argv...))
 }
 

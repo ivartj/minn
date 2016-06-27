@@ -11,6 +11,9 @@ type cmdContext struct{
 	tx *sql.Tx
 	db db
 	Args []string
+	Stdout io.Writer
+	Stderr io.Writer
+	Stdin io.Reader
 }
 
 type cmdExit int
@@ -30,7 +33,58 @@ func cmdRegister(name string, fn func(*cmdContext), usage func(io.Writer)) {
 func cmdNewContext(db db) *cmdContext {
 	return &cmdContext{
 		db: db,
+		Stdout: os.Stdout,
+		Stderr: os.Stderr,
+		Stdin: os.Stdin,
 	}
+}
+
+func (cmd *cmdContext) Printf(format string, args... interface{}) {
+	_, err := fmt.Fprintf(cmd.Stdout, format, args...)
+	if err != nil {
+		cmd.Fatalf("cmd.Printf error: %s.\n", err.Error())
+	}
+}
+
+func (cmd *cmdContext) Print(args... interface{}) {
+	_, err := fmt.Fprint(cmd.Stdout, args...)
+	if err != nil {
+		cmd.Fatalf("cmd.Print error: %s.\n", err.Error())
+	}
+}
+
+func (cmd *cmdContext) Println(args... interface{}) {
+	_, err := fmt.Fprintln(cmd.Stdout, args...)
+	if err != nil {
+		cmd.Fatalf("cmd.Print error: %s.\n", err.Error())
+	}
+}
+
+func (cmd *cmdContext) Fatalf(format string, args... interface{}) {
+	fmt.Fprintf(cmd.Stderr, format, args...)
+	cmd.Exit(1)
+}
+
+func (cmd *cmdContext) Fatal(args... interface{}) {
+	fmt.Fprint(cmd.Stderr, args...)
+	cmd.Exit(1)
+}
+
+func (cmd *cmdContext) Fatalln(args... interface{}) {
+	fmt.Fprintln(cmd.Stderr, args...)
+	cmd.Exit(1)
+}
+
+func (cmd *cmdContext) Warnf(format string, args... interface{}) {
+	fmt.Fprintf(cmd.Stderr, format, args...)
+}
+
+func (cmd *cmdContext) Warn(args... interface{}) {
+	fmt.Fprint(cmd.Stderr, args...)
+}
+
+func (cmd *cmdContext) Warnln(args... interface{}) {
+	fmt.Fprintln(cmd.Stderr, args...)
 }
 
 func (cmd *cmdContext) initDB() {
@@ -98,10 +152,10 @@ func (cmd *cmdContext) Commit() {
 	}
 }
 
-func (cmd *cmdContext) Run(argv []string) (status int) {
+func (cmd *cmdContext) Run(argv... string) (status int) {
 
 	if len(argv) < 1 {
-		fmt.Fprintf(os.Stderr, "No command given.\n")
+		fmt.Fprintf(cmd.Stderr, "No command given.\n")
 		return 1
 	}
 
@@ -114,7 +168,7 @@ func (cmd *cmdContext) Run(argv []string) (status int) {
 	}
 
 	if fn == nil {
-		fmt.Fprintf(os.Stderr, "Unrecognized command, '%s'.\n", argv[0])
+		fmt.Fprintf(cmd.Stderr, "Unrecognized command, '%s'.\n", argv[0])
 		return 1
 	}
 
@@ -126,7 +180,7 @@ func (cmd *cmdContext) Run(argv []string) (status int) {
 			status = int(x.(cmdExit))
 		case error:
 			err := x.(error)
-			fmt.Fprintf(os.Stderr, "Panic occurred: %s.\n", err.Error())
+			fmt.Fprintf(cmd.Stdout, "Panic occurred: %s.\n", err.Error())
 			status = 1
 		}
 		cmd.Rollback()
