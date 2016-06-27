@@ -83,6 +83,10 @@ func main() {
 	deckfilepath, argv := mainArgs()
 
 	cmd := cmdNewContext(dbOpenFile(deckfilepath))
-	os.Exit(cmd.Run(argv...))
+	iargv := make([]interface{}, len(argv))
+	for i, v := range argv {
+		iargv[i] = v
+	}
+	os.Exit(cmd.Run(iargv...))
 }
 

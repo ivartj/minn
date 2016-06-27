@@ -152,7 +152,13 @@ func (cmd *cmdContext) Commit() {
 	}
 }
 
-func (cmd *cmdContext) Run(argv... string) (status int) {
+func (cmd *cmdContext) Run(iargv... interface{}) (status int) {
+
+	argv := make([]string, len(iargv))
+	for i, v := range iargv {
+		argv[i] = fmt.Sprint(v)
+	}
+	cmd.Args = argv
 
 	if len(argv) < 1 {
 		fmt.Fprintf(cmd.Stderr, "No command given.\n")
@@ -187,7 +193,6 @@ func (cmd *cmdContext) Run(argv... string) (status int) {
 	}()
 
 	cmd.tx = nil
-	cmd.Args = argv
 	fn(cmd)
 
 	return status
