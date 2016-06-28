@@ -5,6 +5,7 @@ import (
 	"strconv"
 	"io"
 	"ivartj/args"
+	"time"
 )
 
 func init() {
@@ -62,7 +63,7 @@ func cmdRate(cmd *cmdContext) {
 
 	rating := cmdRateArgs(cmd)
 
-	cardId, err := sm2CurrentCard(cmd.DB())
+	cardId, err := utilCurrentCard(cmd)
 	if err != nil {
 		cmd.Fatalf("Failed to get current card ID: %s.\n", err.Error())
 	}
@@ -70,75 +71,56 @@ func cmdRate(cmd *cmdContext) {
 	var (
 		efactor float64
 		interval int
-		updateEfactor bool
-		updateInterval bool
+		state utilCardStatus
+		scheduleTime time.Time
 	)
-	row := cmd.QueryRow("select efactor, interval, update_efactor, update_interval from cards natural join schedulings where card_id = ?", cardId)
-	err = row.Scan(&efactor, &interval, &updateEfactor, &updateInterval)
+	row := cmd.QueryRow("select efactor, interval, state from cards where card_id = ?", cardId)
+	err = row.Scan(&efactor, &interval, &state)
 	if err != nil {
 		cmd.Fatalf("Database error: %s.\n", err.Error())
 	}
 
-	if updateEfactor {
+	switch state {
+	case CARD_NEW: fallthrough;
+	case CARD_RELEARN:
+		if rating == 5 {
+			state = CARD_REVIEW
+			scheduleTime = cmd.Now().Add(time.Hour * time.Duration(24 * interval))
+		} else {
+			scheduleTime = cmd.Now()
+		}
+
+	case CARD_REVIEW:
 		efactor = efactor - 0.8 + 0.28 * float64(rating) - 0.02 * float64(rating) * float64(rating)
 		if efactor < 1.3 {
 			efactor = 1.3
 		}
-		_, err = cmd.Exec(`
-			update cards
-				set efactor = ?
-				where card_id = ?;
-		`, efactor, cardId)
-		if err != nil {
-			cmd.Fatalf("Failed to update E-factor: %s.\n", err.Error())
-		}
-	}
 
-	if updateInterval {
-		newInterval := 0
-		if rating >= 3 {
-			switch interval {
-			case 0:
-				newInterval = 1
-			case 1:
-				newInterval = 6
-			default:
-				newInterval = int(float64(interval) * efactor + 0.5) // rounding
-			}
+		if rating < 3 {
+			interval = 1
 		} else {
-			newInterval = 0
+			interval = int(float64(interval) * efactor + 0.5)
 		}
 
-		if newInterval != interval {
-			_, err := cmd.Exec(`
-				update cards
-					set interval = ?
-					where card_id = ?;
-			`, newInterval, cardId)
-			if err != nil {
-				cmd.Fatalf("Failed to update interval: %s.\n", err.Error())
-			}
+		if rating < 4 {
+			state = CARD_RELEARN
+			scheduleTime = cmd.Now()
+		} else {
+			scheduleTime = cmd.Now().Add(time.Hour * time.Duration(24 * interval))
 		}
-		interval = newInterval
-	}
-
-	// "After each repetition on a given day repeat again all items that
-	// scored below four in the quality assessment"
-	updateInterval = true
-	if rating < 4 {
-		interval = 0
-		updateInterval = false
 	}
 
 	_, err = cmd.Exec(`
-		insert or replace into
-			schedulings (card_id, new, schedule_time, update_efactor, update_interval)
-		values
-			(?, 0, datetime('now', ?), ?, ?);
-	`, cardId, fmt.Sprintf("+%d day", interval), rating >= 3, updateInterval)
+		update cards
+		set
+			efactor = ?,
+			interval = ?,
+			state = ?,
+			schedule_time = ?
+		where card_id = ?;`, efactor, interval, state, scheduleTime.Format(utilTimeFormat), cardId)
+
 	if err != nil {
-		cmd.Fatalf("Failed to add new scheduling: %s.\n", err.Error())
-		cmd.Exit(1)
+		cmd.Fatalf("Error occurred on updating card: %s.\n", err.Error())
 	}
 
 	cmd.Commit()

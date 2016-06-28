@@ -49,10 +49,10 @@ func cmdFrontArgs(cmd *cmdContext) (int, bool) {
 			cmd.Fatalf("Failed to parse Card ID: %s.\n", err.Error())
 		}
 		return cardId, false
+	default:
+		cmdFrontUsage(cmd.Stderr)
+		cmd.Exit(1)
 	}
-
-	cmdFrontUsage(cmd.Stderr)
-	cmd.Exit(1)
 
 	// unreachable
 	return 0, false
@@ -64,7 +64,7 @@ func cmdFront(cmd *cmdContext) {
 
 	var err error
 	if current {
-		cardId, err = sm2CurrentCard(cmd.DB())
+		cardId, err = utilCurrentCard(cmd)
 		if err != nil {
 			panic(err)
 		}

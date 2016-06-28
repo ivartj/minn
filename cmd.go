@@ -5,6 +5,7 @@ import (
 	"os"
 	"database/sql"
 	"io"
+	"time"
 )
 
 type cmdContext struct{
@@ -14,6 +15,7 @@ type cmdContext struct{
 	Stdout io.Writer
 	Stderr io.Writer
 	Stdin io.Reader
+	offset time.Duration // For manipulation in tests only
 }
 
 type cmdExit int
@@ -36,6 +38,7 @@ func cmdNewContext(db db) *cmdContext {
 		Stdout: os.Stdout,
 		Stderr: os.Stderr,
 		Stdin: os.Stdin,
+		offset: 0,
 	}
 }
 
@@ -196,5 +199,13 @@ func (cmd *cmdContext) Run(iargv... interface{}) (status int) {
 	fn(cmd)
 
 	return status
+}
+
+func (cmd *cmdContext) ForwardTime(d time.Duration) {
+	cmd.offset += d
+}
+
+func (cmd *cmdContext) Now() time.Time {
+	return time.Now().Add(cmd.offset)
 }
 

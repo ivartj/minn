@@ -52,11 +52,12 @@ func cmdAdd(cmd *cmdContext) {
 
 	front, back := cmdAddArgs(cmd)
 
+	nowStr := cmd.Now().Format(utilTimeFormat)
 	res, err := cmd.Exec(`
 		insert into
-			cards (efactor, interval, front, back, entry_time)
-			values (2.5, 0, ?, ?, datetime());
-	`, front, back)
+			cards (entry_time, front, back, efactor, interval, state, schedule_time)
+			values (?, ?, ?, 2.5, 1, 0, ?);
+	`, nowStr, front, back, nowStr)
 	if err != nil {
 		cmd.Fatalf("Database error: %s.\n", err.Error())
 	}
@@ -64,11 +65,6 @@ func cmdAdd(cmd *cmdContext) {
 	cardId, err := res.LastInsertId()
 	if err != nil {
 		cmd.Fatalf("Failed to get card ID from database engine: %s.\n", err.Error())
-	}
-
-	_, err = cmd.Exec("insert into schedulings (card_id, new, schedule_time, update_efactor, update_interval) values (?, 1, datetime(), 1, 1);", cardId)
-	if err != nil {
-		cmd.Fatalf("Failed to schedule card: %s.\n", err.Error())
 	}
 
 	cmd.Println(cardId)

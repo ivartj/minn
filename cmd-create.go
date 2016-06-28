@@ -52,39 +52,28 @@ func cmdCreate(cmd *cmdContext) {
 			program_version text not null,
 			change_time text not null
 		);
-		
+
 		create table cards (
 			card_id integer not null primary key,
-			efactor float not null,
-			interval integer not null,
+			entry_time text not null,
+
 			front text not null unique,
 			back text not null,
-			entry_time text not null
+
+			efactor float not null,
+			interval integer not null,
+
+			-- 0 new
+			-- 1 relearn
+			-- 2 review
+			state integer not null,
+
+			schedule_time text not null
 		);
 
-		create table ratings (
-			time text not null,
-			card_id integer not null,
-			rating integer not null,
-			foreign key(card_id)
-				references cards(card_id)
-				on delete cascade
-		);
+		insert into schema_changes values (?, ?, ?);
 
-		create table schedulings (
-			card_id integer not null unique,
-			new integer not null,
-			schedule_time text not null,
-			update_efactor integer not null,
-			update_interval integer not null,
-			foreign key(card_id)
-				references cards(card_id)
-				on delete cascade
-		);
-
-		insert into schema_changes values (?, ?, datetime());
-
-	`, mainSchemaVersion, mainProgramVersion)
+	`, mainSchemaVersion, mainProgramVersion, cmd.Now().Format(utilTimeFormat))
 
 	if err != nil {
 		cmd.Fatalf("Error on creating database: %s.\n", err.Error())

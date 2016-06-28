@@ -13,7 +13,7 @@ const (
 	mainProgramName		= "repete"
 	mainProgramVersion	= "0.1-SNAPSHOT"
 
-	mainSchemaVersion	= "0.1.1"
+	mainSchemaVersion	= "0.1.2"
 )
 
 var (

@@ -45,7 +45,7 @@ func cmdCurrent(cmd *cmdContext) {
 
 	cmdCurrentArgs(cmd)
 
-	cardId, err := sm2CurrentCard(cmd.DB())
+	cardId, err := utilCurrentCard(cmd)
 	if err != nil {
 		cmd.Fatalf("Failed to get current card ID: %s.\n", err.Error())
 	}

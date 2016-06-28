@@ -62,7 +62,7 @@ func cmdBack(cmd *cmdContext) {
 
 	var err error
 	if current {
-		cardId, err = sm2CurrentCard(cmd.DB())
+		cardId, err = utilCurrentCard(cmd)
 		if err != nil {
 			panic(err)
 		}
