@@ -17,7 +17,7 @@ const (
 )
 
 var (
-	mainConfDeckPath	= "./repete.deck"
+	mainConfDeckPath	= mainProgramName + ".deck"
 )
 
 func mainUsage(out io.Writer) {
