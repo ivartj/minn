@@ -9,7 +9,7 @@ import (
 )
 
 func init() {
-	cmdRegister("rate", cmdRate, cmdRateUsage)
+	cmdRegister("rate", cmdRate)
 }
 
 func cmdRateUsage(w io.Writer) {

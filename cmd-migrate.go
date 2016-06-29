@@ -7,7 +7,7 @@ import (
 )
 
 func init() {
-	cmdRegister("migrate", cmdMigrate, cmdMigrateUsage)
+	cmdRegister("migrate", cmdMigrate)
 }
 
 func cmdMigrateUsage(w io.Writer) {

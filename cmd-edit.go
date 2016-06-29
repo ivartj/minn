@@ -8,7 +8,7 @@ import (
 )
 
 func init() {
-	cmdRegister("edit", cmdEdit, cmdEditUsage)
+	cmdRegister("edit", cmdEdit)
 }
 
 func cmdEditUsage(w io.Writer) {

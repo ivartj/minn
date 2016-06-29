@@ -25,11 +25,10 @@ var cmdList = []cmdListItem{}
 type cmdListItem struct{
 	name string
 	fn func(*cmdContext)
-	usage func(io.Writer)
 }
 
-func cmdRegister(name string, fn func(*cmdContext), usage func(io.Writer)) {
-	cmdList = append(cmdList, cmdListItem{name, fn, usage})
+func cmdRegister(name string, fn func(*cmdContext)) {
+	cmdList = append(cmdList, cmdListItem{name, fn})
 }
 
 func cmdNewContext(db db) *cmdContext {

@@ -9,7 +9,7 @@ import (
 )
 
 func init() {
-	cmdRegister("front", cmdFront, cmdFrontUsage)
+	cmdRegister("front", cmdFront)
 }
 
 func cmdFrontUsage(w io.Writer) {

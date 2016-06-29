@@ -23,10 +23,12 @@ var (
 func mainUsage(out io.Writer) {
 	fmt.Fprintf(out, "Usage: %s [ -d <deck> ] <command> ...\n", mainProgramName)
 
-	// Print first line, the usage string, of each subcommand
+	// Print the usage string of each subcommand
+	cmd := cmdNewContext(dbOpenTemp())
 	for _, v := range cmdList {
 		buf := bytes.NewBuffer([]byte{})
-		v.usage(buf)
+		cmd.Stdout = buf
+		cmd.Run(v.name, "-h")
 		line, _ := bufio.NewReader(buf).ReadString('\n')
 		fmt.Fprint(out, line)
 	}

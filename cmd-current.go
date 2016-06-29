@@ -7,7 +7,7 @@ import (
 )
 
 func init() {
-	cmdRegister("current", cmdCurrent, cmdCurrentUsage)
+	cmdRegister("current", cmdCurrent)
 }
 
 func cmdCurrentUsage(w io.Writer) {

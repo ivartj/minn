@@ -8,7 +8,7 @@ import (
 )
 
 func init() {
-	cmdRegister("remove", cmdRemove, cmdRemoveUsage)
+	cmdRegister("remove", cmdRemove)
 }
 
 func cmdRemoveUsage(w io.Writer) {
