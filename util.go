@@ -22,10 +22,13 @@ func utilCurrentCard(cmd *cmdContext) (int, error) {
 
 	row := cmd.QueryRow(`
 		select card_id
-			from cards
-			where schedule_time <= ?
+			from (select card_id, schedule_time
+				from cards
+				where schedule_time <= ?
+				order by schedule_time desc
+				limit ?)
 			order by schedule_time asc
-			limit 1;`, cmd.Now().Format(utilTimeFormat))
+			limit 1;`, cmd.Now().Format(utilTimeFormat), cmd.MaxRelearnBacklog)
 	cardId := 0
 	err := row.Scan(&cardId)
 	if err == sql.ErrNoRows {

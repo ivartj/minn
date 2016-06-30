@@ -7,6 +7,7 @@ import (
 	"io"
 	"bytes"
 	"bufio"
+	"strconv"
 )
 
 const (
@@ -17,7 +18,8 @@ const (
 )
 
 var (
-	mainConfDeckPath	= mainProgramName + ".deck"
+	mainConfDeckPath		= mainProgramName + ".deck"
+	mainConfMaxRelearnBacklog	= 10
 )
 
 func mainUsage(out io.Writer) {
@@ -60,6 +62,23 @@ func mainArgs() ([]string) {
 					os.Exit(1)
 				}
 				mainConfDeckPath = param
+
+			case "-b", "--max-relearn-backlog":
+				param, err := tok.TakeParameter()
+				if err != nil {
+					fmt.Fprintf(os.Stderr, "Failed to get parameter to '%s' option: %s.\n", tok.Arg(), err.Error())
+					os.Exit(1)
+				}
+				i, err := strconv.Atoi(param)
+				if err != nil {
+					fmt.Fprintf(os.Stderr, "Failed to parse parameter to '%s' option: %s.\n", tok.Arg(), err.Error())
+					os.Exit(1)
+				}
+				if i <= 0 {
+					fmt.Fprintf(os.Stderr, "Parameter to '%s' option must be above zero.\n", tok.Arg())
+					os.Exit(1)
+				}
+				mainConfMaxRelearnBacklog = i
 
 			default:
 				fmt.Fprintf(os.Stderr, "Unrecognized option, %s.\n", tok.Arg())

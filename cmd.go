@@ -16,6 +16,7 @@ type cmdContext struct{
 	Stderr io.Writer
 	Stdin io.Reader
 	offset time.Duration // For manipulation in tests only
+	MaxRelearnBacklog int
 }
 
 type cmdExit int
@@ -38,6 +39,7 @@ func cmdNewContext(db db) *cmdContext {
 		Stderr: os.Stderr,
 		Stdin: os.Stdin,
 		offset: 0,
+		MaxRelearnBacklog: mainConfMaxRelearnBacklog,
 	}
 }
 
