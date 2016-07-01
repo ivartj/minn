@@ -4,19 +4,19 @@ import (
 	"fmt"
 	"strconv"
 	"database/sql"
-	"io"
 	"ivartj/args"
+	"io"
 )
 
 func init() {
-	cmdRegister("back", cmdBack)
+	cmdRegister("front", frontCmd)
 }
 
-func cmdBackUsage(w io.Writer) {
-	fmt.Fprintf(w, "Usage: %s back [ <card-id> ]\n", mainProgramName)
+func frontCmdUsage(w io.Writer) {
+	fmt.Fprintf(w, "Usage: %s front [ <card-id> ]\n", mainProgramName)
 }
 
-func cmdBackArgs(cmd *cmdContext) (int, bool) {
+func frontCmdArgs(cmd *cmdContext) (int, bool) {
 
 	plainArgs := []string{}
 	tok := args.NewTokenizer(cmd.Args)
@@ -26,7 +26,7 @@ func cmdBackArgs(cmd *cmdContext) (int, bool) {
 		if tok.IsOption() {
 			switch tok.Arg() {
 			case "-h", "--help":
-				cmdBackUsage(cmd.Stdout)
+				frontCmdUsage(cmd.Stdout)
 				cmd.Exit(0)
 			default:
 				cmd.Fatalf("Unrecognized option: %s.\n", tok.Arg())
@@ -49,16 +49,18 @@ func cmdBackArgs(cmd *cmdContext) (int, bool) {
 			cmd.Fatalf("Failed to parse Card ID: %s.\n", err.Error())
 		}
 		return cardId, false
+	default:
+		frontCmdUsage(cmd.Stderr)
+		cmd.Exit(1)
 	}
 
-	cmdBackUsage(cmd.Stderr)
-	cmd.Exit(1)
+	// unreachable
 	return 0, false
 }
 
-func cmdBack(cmd *cmdContext) {
+func frontCmd(cmd *cmdContext) {
 
-	cardId, current := cmdBackArgs(cmd)
+	cardId, current := frontCmdArgs(cmd)
 
 	var err error
 	if current {
@@ -68,9 +70,9 @@ func cmdBack(cmd *cmdContext) {
 		}
 	}
 
-	row := cmd.QueryRow("select back from cards where card_id = ?;", cardId)
-	var back string
-	err = row.Scan(&back)
+	row := cmd.QueryRow("select front from cards where card_id = ?;", cardId)
+	var front string
+	err = row.Scan(&front)
 	if err == sql.ErrNoRows {
 		cmd.Fatalf("No card by that card ID.\n");
 	}
@@ -78,7 +80,7 @@ func cmdBack(cmd *cmdContext) {
 		cmd.Fatalf("Database query error: %s.\n", err.Error())
 	}
 
-	cmd.Println(back)
+	cmd.Println(front)
 
 	cmd.Commit()
 }

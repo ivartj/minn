@@ -7,14 +7,14 @@ import (
 )
 
 func init() {
-	cmdRegister("add", cmdAdd)
+	cmdRegister("add", addCmd)
 }
 
-func cmdAddUsage(w io.Writer) {
+func addCmdUsage(w io.Writer) {
 	fmt.Fprintf(w, "Usage: %s add <front> <back>\n", mainProgramName)
 }
 
-func cmdAddArgs(cmd *cmdContext) (string, string) {
+func addCmdArgs(cmd *cmdContext) (string, string) {
 
 	plainArgs := []string{}
 	tok := args.NewTokenizer(cmd.Args)
@@ -24,7 +24,7 @@ func cmdAddArgs(cmd *cmdContext) (string, string) {
 		if tok.IsOption() {
 			switch tok.Arg() {
 			case "-h", "--help":
-				cmdAddUsage(cmd.Stdout)
+				addCmdUsage(cmd.Stdout)
 				cmd.Exit(0)
 			default:
 				cmd.Fatalf("Unrecognized option, '%s'.\n", tok.Arg())
@@ -40,17 +40,17 @@ func cmdAddArgs(cmd *cmdContext) (string, string) {
 	}
 
 	if len(plainArgs) != 2 {
-		cmdAddUsage(cmd.Stderr)
+		addCmdUsage(cmd.Stderr)
 		cmd.Exit(1)
 	}
 
 	return plainArgs[0], plainArgs[1]
 }
 
-func cmdAdd(cmd *cmdContext) {
+func addCmd(cmd *cmdContext) {
 	// TODO: Check against duplicate card fronts
 
-	front, back := cmdAddArgs(cmd)
+	front, back := addCmdArgs(cmd)
 
 	nowStr := cmd.Now().Format(utilTimeFormat)
 	res, err := cmd.Exec(`

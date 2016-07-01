@@ -3,20 +3,19 @@ package main
 import (
 	"fmt"
 	"strconv"
-	"database/sql"
-	"ivartj/args"
 	"io"
+	"ivartj/args"
 )
 
 func init() {
-	cmdRegister("front", cmdFront)
+	cmdRegister("remove", removeCmd)
 }
 
-func cmdFrontUsage(w io.Writer) {
-	fmt.Fprintf(w, "Usage: %s front [ <card-id> ]\n", mainProgramName)
+func removeCmdUsage(w io.Writer) {
+	fmt.Fprintf(w, "Usage: %s remove [ <card-id> ]\n", mainProgramName)
 }
 
-func cmdFrontArgs(cmd *cmdContext) (int, bool) {
+func removeCmdArgs(cmd *cmdContext) (int, bool) {
 
 	plainArgs := []string{}
 	tok := args.NewTokenizer(cmd.Args)
@@ -26,7 +25,7 @@ func cmdFrontArgs(cmd *cmdContext) (int, bool) {
 		if tok.IsOption() {
 			switch tok.Arg() {
 			case "-h", "--help":
-				cmdFrontUsage(cmd.Stdout)
+				removeCmdUsage(cmd.Stdout)
 				cmd.Exit(0)
 			default:
 				cmd.Fatalf("Unrecognized option: %s.\n", tok.Arg())
@@ -47,20 +46,19 @@ func cmdFrontArgs(cmd *cmdContext) (int, bool) {
 		cardId, err := strconv.Atoi(plainArgs[0])
 		if err != nil {
 			cmd.Fatalf("Failed to parse Card ID: %s.\n", err.Error())
+			cmd.Exit(1)
 		}
 		return cardId, false
-	default:
-		cmdFrontUsage(cmd.Stderr)
-		cmd.Exit(1)
 	}
 
-	// unreachable
+	removeCmdUsage(cmd.Stderr)
+	cmd.Exit(1)
 	return 0, false
 }
 
-func cmdFront(cmd *cmdContext) {
+func removeCmd(cmd *cmdContext) {
 
-	cardId, current := cmdFrontArgs(cmd)
+	cardId, current := removeCmdArgs(cmd)
 
 	var err error
 	if current {
@@ -70,17 +68,19 @@ func cmdFront(cmd *cmdContext) {
 		}
 	}
 
-	row := cmd.QueryRow("select front from cards where card_id = ?;", cardId)
-	var front string
-	err = row.Scan(&front)
-	if err == sql.ErrNoRows {
-		cmd.Fatalf("No card by that card ID.\n");
-	}
+	res, err := cmd.Exec("delete from cards where card_id = ?;", cardId)
 	if err != nil {
-		cmd.Fatalf("Database query error: %s.\n", err.Error())
+		cmd.Fatalf("Database error: %s.\n", err.Error())
 	}
 
-	cmd.Println(front)
+	rowsAffected, err := res.RowsAffected()
+	if err != nil {
+		cmd.Fatalf("Unable to get number of rows affected: %s.\n", err.Error())
+	}
+
+	if rowsAffected == 0 {
+		cmd.Fatalf("No card by that card ID.\n")
+	}
 
 	cmd.Commit()
 }

@@ -7,14 +7,14 @@ import (
 )
 
 func init() {
-	cmdRegister("current", cmdCurrent)
+	cmdRegister("current", currentCmd)
 }
 
-func cmdCurrentUsage(w io.Writer) {
+func currentCmdUsage(w io.Writer) {
 	fmt.Fprintf(w, "Usage: %s current\n", mainProgramName)
 }
 
-func cmdCurrentArgs(cmd *cmdContext) {
+func currentCmdArgs(cmd *cmdContext) {
 
 	tok := args.NewTokenizer(cmd.Args)
 
@@ -24,14 +24,14 @@ func cmdCurrentArgs(cmd *cmdContext) {
 
 			switch tok.Arg() {
 			case "-h", "--help":
-				cmdCurrentUsage(cmd.Stdout)
+				currentCmdUsage(cmd.Stdout)
 				cmd.Exit(0)
 			default:
 				cmd.Fatalf("Unrecognized option, '%s'.\n", tok.Arg())
 			}
 				
 		} else {
-			cmdCurrentUsage(cmd.Stderr)
+			currentCmdUsage(cmd.Stderr)
 			cmd.Exit(1)
 		}
 	}
@@ -41,9 +41,9 @@ func cmdCurrentArgs(cmd *cmdContext) {
 	}
 }
 
-func cmdCurrent(cmd *cmdContext) {
+func currentCmd(cmd *cmdContext) {
 
-	cmdCurrentArgs(cmd)
+	currentCmdArgs(cmd)
 
 	cardId, err := utilCurrentCard(cmd)
 	if err != nil {

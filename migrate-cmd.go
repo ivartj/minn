@@ -7,14 +7,14 @@ import (
 )
 
 func init() {
-	cmdRegister("migrate", cmdMigrate)
+	cmdRegister("migrate", migrateCmd)
 }
 
-func cmdMigrateUsage(w io.Writer) {
+func migrateCmdUsage(w io.Writer) {
 	fmt.Fprintf(w, "Usage: %s migrate [ -t <to-schema-version> ]\n", mainProgramName)
 }
 
-func cmdMigrateArgs(cmd *cmdContext) (schemaVersion string, fromBlank bool) {
+func migrateCmdArgs(cmd *cmdContext) (schemaVersion string, fromBlank bool) {
 
 	tok := args.NewTokenizer(cmd.Args)
 	schemaVersion = mainSchemaVersion
@@ -26,7 +26,7 @@ func cmdMigrateArgs(cmd *cmdContext) (schemaVersion string, fromBlank bool) {
 			switch tok.Arg() {
 
 			case "-h", "--help":
-				cmdMigrateUsage(cmd.Stdout)
+				migrateCmdUsage(cmd.Stdout)
 				cmd.Exit(0)
 
 			case "-t", "--to":
@@ -45,7 +45,7 @@ func cmdMigrateArgs(cmd *cmdContext) (schemaVersion string, fromBlank bool) {
 			}
 
 		} else {
-			cmdMigrateUsage(cmd.Stderr)
+			migrateCmdUsage(cmd.Stderr)
 			cmd.Exit(1)
 		}
 
@@ -58,8 +58,8 @@ func cmdMigrateArgs(cmd *cmdContext) (schemaVersion string, fromBlank bool) {
 	return schemaVersion, fromBlank
 }
 
-func cmdMigrate(cmd *cmdContext) {
-	schemaVersion, fromBlank := cmdMigrateArgs(cmd)
+func migrateCmd(cmd *cmdContext) {
+	schemaVersion, fromBlank := migrateCmdArgs(cmd)
 
 	var currentSchemaVersion string
 	if fromBlank {

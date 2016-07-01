@@ -8,14 +8,14 @@ import (
 )
 
 func init() {
-	cmdRegister("edit", cmdEdit)
+	cmdRegister("edit", editCmd)
 }
 
-func cmdEditUsage(w io.Writer) {
+func editCmdUsage(w io.Writer) {
 	fmt.Fprintf(w, "Usage: %s edit <card-id> <front> <back>\n", mainProgramName)
 }
 
-func cmdEditArgs(cmd *cmdContext) (int, string, string) {
+func editCmdArgs(cmd *cmdContext) (int, string, string) {
 
 	plainArgs := []string{}
 	tok := args.NewTokenizer(cmd.Args)
@@ -25,7 +25,7 @@ func cmdEditArgs(cmd *cmdContext) (int, string, string) {
 		if tok.IsOption() {
 			switch tok.Arg() {
 			case "-h", "--help":
-				cmdEditUsage(cmd.Stdout)
+				editCmdUsage(cmd.Stdout)
 				cmd.Exit(0)
 			default:
 				cmd.Fatalf("Unrecognized option, '%s'.\n", tok.Arg())
@@ -41,7 +41,7 @@ func cmdEditArgs(cmd *cmdContext) (int, string, string) {
 	}
 
 	if len(plainArgs) != 3 {
-		cmdEditUsage(cmd.Stderr)
+		editCmdUsage(cmd.Stderr)
 		cmd.Exit(1)
 	}
 
@@ -54,9 +54,9 @@ func cmdEditArgs(cmd *cmdContext) (int, string, string) {
 	return cardId, plainArgs[1], plainArgs[2]
 }
 
-func cmdEdit(cmd *cmdContext) {
+func editCmd(cmd *cmdContext) {
 
-	cardId, front, back := cmdEditArgs(cmd)
+	cardId, front, back := editCmdArgs(cmd)
 
 	res, err := cmd.Exec("update cards set front = ?, back = ? where card_id = ?;", front, back, cardId)
 	if err != nil {

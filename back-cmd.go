@@ -3,19 +3,20 @@ package main
 import (
 	"fmt"
 	"strconv"
+	"database/sql"
 	"io"
 	"ivartj/args"
 )
 
 func init() {
-	cmdRegister("remove", cmdRemove)
+	cmdRegister("back", backCmd)
 }
 
-func cmdRemoveUsage(w io.Writer) {
-	fmt.Fprintf(w, "Usage: %s remove [ <card-id> ]\n", mainProgramName)
+func backCmdUsage(w io.Writer) {
+	fmt.Fprintf(w, "Usage: %s back [ <card-id> ]\n", mainProgramName)
 }
 
-func cmdRemoveArgs(cmd *cmdContext) (int, bool) {
+func backCmdArgs(cmd *cmdContext) (int, bool) {
 
 	plainArgs := []string{}
 	tok := args.NewTokenizer(cmd.Args)
@@ -25,7 +26,7 @@ func cmdRemoveArgs(cmd *cmdContext) (int, bool) {
 		if tok.IsOption() {
 			switch tok.Arg() {
 			case "-h", "--help":
-				cmdRemoveUsage(cmd.Stdout)
+				backCmdUsage(cmd.Stdout)
 				cmd.Exit(0)
 			default:
 				cmd.Fatalf("Unrecognized option: %s.\n", tok.Arg())
@@ -46,19 +47,18 @@ func cmdRemoveArgs(cmd *cmdContext) (int, bool) {
 		cardId, err := strconv.Atoi(plainArgs[0])
 		if err != nil {
 			cmd.Fatalf("Failed to parse Card ID: %s.\n", err.Error())
-			cmd.Exit(1)
 		}
 		return cardId, false
 	}
 
-	cmdRemoveUsage(cmd.Stderr)
+	backCmdUsage(cmd.Stderr)
 	cmd.Exit(1)
 	return 0, false
 }
 
-func cmdRemove(cmd *cmdContext) {
+func backCmd(cmd *cmdContext) {
 
-	cardId, current := cmdRemoveArgs(cmd)
+	cardId, current := backCmdArgs(cmd)
 
 	var err error
 	if current {
@@ -68,19 +68,17 @@ func cmdRemove(cmd *cmdContext) {
 		}
 	}
 
-	res, err := cmd.Exec("delete from cards where card_id = ?;", cardId)
+	row := cmd.QueryRow("select back from cards where card_id = ?;", cardId)
+	var back string
+	err = row.Scan(&back)
+	if err == sql.ErrNoRows {
+		cmd.Fatalf("No card by that card ID.\n");
+	}
 	if err != nil {
-		cmd.Fatalf("Database error: %s.\n", err.Error())
+		cmd.Fatalf("Database query error: %s.\n", err.Error())
 	}
 
-	rowsAffected, err := res.RowsAffected()
-	if err != nil {
-		cmd.Fatalf("Unable to get number of rows affected: %s.\n", err.Error())
-	}
-
-	if rowsAffected == 0 {
-		cmd.Fatalf("No card by that card ID.\n")
-	}
+	cmd.Println(back)
 
 	cmd.Commit()
 }

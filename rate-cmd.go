@@ -9,14 +9,14 @@ import (
 )
 
 func init() {
-	cmdRegister("rate", cmdRate)
+	cmdRegister("rate", rateCmd)
 }
 
-func cmdRateUsage(w io.Writer) {
+func rateCmdUsage(w io.Writer) {
 	fmt.Fprintf(w, "Usage: %s rate <rating>\n", mainProgramName)
 }
 
-func cmdRateArgs(cmd *cmdContext) int {
+func rateCmdArgs(cmd *cmdContext) int {
 
 	plainArgs := []string{}
 	tok := args.NewTokenizer(cmd.Args)
@@ -27,7 +27,7 @@ func cmdRateArgs(cmd *cmdContext) int {
 
 			switch tok.Arg() {
 			case "-h", "--help":
-				cmdRateUsage(cmd.Stdout)
+				rateCmdUsage(cmd.Stdout)
 				cmd.Exit(0)
 			default:
 				cmd.Fatalf("Unrecognized option, '%s'.\n", tok.Arg())
@@ -43,7 +43,7 @@ func cmdRateArgs(cmd *cmdContext) int {
 	}
 
 	if len(plainArgs) != 1 {
-		cmdRateUsage(cmd.Stderr)
+		rateCmdUsage(cmd.Stderr)
 		cmd.Exit(1)
 	}
 
@@ -59,9 +59,9 @@ func cmdRateArgs(cmd *cmdContext) int {
 	return rating
 }
 
-func cmdRate(cmd *cmdContext) {
+func rateCmd(cmd *cmdContext) {
 
-	rating := cmdRateArgs(cmd)
+	rating := rateCmdArgs(cmd)
 
 	cardId, err := utilCurrentCard(cmd)
 	if err != nil {

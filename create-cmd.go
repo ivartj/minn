@@ -7,14 +7,14 @@ import (
 )
 
 func init() {
-	cmdRegister("create", cmdCreate)
+	cmdRegister("create", createCmd)
 }
 
-func cmdCreateUsage(w io.Writer) {
+func createCmdUsage(w io.Writer) {
 	fmt.Fprintf(w, "Usage: %s create\n", mainProgramName)
 }
 
-func cmdCreateArgs(cmd *cmdContext) {
+func createCmdArgs(cmd *cmdContext) {
 
 	tok := args.NewTokenizer(cmd.Args)
 
@@ -24,14 +24,14 @@ func cmdCreateArgs(cmd *cmdContext) {
 
 			switch tok.Arg() {
 			case "-h", "--help":
-				cmdCreateUsage(cmd.Stdout)
+				createCmdUsage(cmd.Stdout)
 				cmd.Exit(0)
 			default:
 				cmd.Fatalf("Unrecognized option, '%s'.\n", tok.Arg())
 			}
 				
 		} else {
-			cmdCreateUsage(cmd.Stderr)
+			createCmdUsage(cmd.Stderr)
 			cmd.Exit(1)
 		}
 	}
@@ -41,9 +41,9 @@ func cmdCreateArgs(cmd *cmdContext) {
 	}
 }
 
-func cmdCreate(cmd *cmdContext) {
+func createCmd(cmd *cmdContext) {
 
-	cmdCreateArgs(cmd)
+	createCmdArgs(cmd)
 
 	path, err := dbGetMigrationPath("", mainSchemaVersion)
 	if err != nil {
