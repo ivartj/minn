@@ -13,6 +13,16 @@ func init() {
 
 func removeCmdUsage(w io.Writer) {
 	fmt.Fprintf(w, "Usage: %s remove [ <card-id> ]\n", mainProgramName)
+
+	fmt.Fprintf(w, `
+Description:
+  Removes the card by the given card ID.
+
+Options:
+  -h, --help  Prints help message.
+
+`)
+
 }
 
 func removeCmdArgs(cmd *cmdContext) (int, bool) {

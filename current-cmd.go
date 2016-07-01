@@ -12,6 +12,16 @@ func init() {
 
 func currentCmdUsage(w io.Writer) {
 	fmt.Fprintf(w, "Usage: %s current\n", mainProgramName)
+
+	fmt.Fprintf(w, `
+Description:
+  Presents the card ID of the current card.
+`)
+
+	fmt.Fprintln(w, `
+Options:
+  -h, --help  Prints help message.
+`)
 }
 
 func currentCmdArgs(cmd *cmdContext) {

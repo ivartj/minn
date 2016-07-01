@@ -14,6 +14,15 @@ func init() {
 
 func backCmdUsage(w io.Writer) {
 	fmt.Fprintf(w, "Usage: %s back [ <card-id> ]\n", mainProgramName)
+
+	fmt.Fprintf(w, `
+Description:
+  Shows the back of a card. The current card if no card ID is given.
+`)
+	fmt.Fprintln(w, `
+Options:
+  -h, --help  Prints help message.
+`)
 }
 
 func backCmdArgs(cmd *cmdContext) (int, bool) {

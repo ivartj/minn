@@ -13,6 +13,16 @@ func init() {
 
 func editCmdUsage(w io.Writer) {
 	fmt.Fprintf(w, "Usage: %s edit <card-id> <front> <back>\n", mainProgramName)
+
+	fmt.Fprintf(w, `
+Description:
+  Edits front and back of the card by the given card ID.
+`)
+
+	fmt.Fprintln(w, `
+Options:
+  -h, --help  Prints help message.
+`)
 }
 
 func editCmdArgs(cmd *cmdContext) (int, string, string) {

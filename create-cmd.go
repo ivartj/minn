@@ -12,6 +12,22 @@ func init() {
 
 func createCmdUsage(w io.Writer) {
 	fmt.Fprintf(w, "Usage: %s create\n", mainProgramName)
+
+	fmt.Fprintf(w, `
+Description:
+  Initializes deck database. As with other subcommands, the path of the
+  database is by default at:
+
+   %s
+
+  This can be changed with the --deck option before this subcommand.
+`, mainConfDeckPath)
+
+	fmt.Fprintln(w, `
+Options:
+  -h, --help  Prints help message.
+`)
+
 }
 
 func createCmdArgs(cmd *cmdContext) {

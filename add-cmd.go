@@ -12,6 +12,18 @@ func init() {
 
 func addCmdUsage(w io.Writer) {
 	fmt.Fprintf(w, "Usage: %s add <front> <back>\n", mainProgramName)
+
+	fmt.Fprintf(w, `
+Description:
+  Adds card to deck database. The card ID is printed and the card is
+  immediately scheduled.
+`)
+
+	fmt.Fprintln(w, `
+Options:
+  -h, --help  Prints help message.
+`)
+
 }
 
 func addCmdArgs(cmd *cmdContext) (string, string) {

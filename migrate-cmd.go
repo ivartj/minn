@@ -12,6 +12,18 @@ func init() {
 
 func migrateCmdUsage(w io.Writer) {
 	fmt.Fprintf(w, "Usage: %s migrate [ -t <to-schema-version> ]\n", mainProgramName)
+
+	fmt.Fprintf(w, `
+Description:
+  Migrates the database schema of a deck file to the version current in the
+  program, or an alternate one if the --to option is given.
+
+Options:
+  -h, --help  Prints help message.
+  -t, --to    Specifies alternate schema to migrate to.
+
+`)
+
 }
 
 func migrateCmdArgs(cmd *cmdContext) (schemaVersion string, fromBlank bool) {

@@ -14,6 +14,16 @@ func init() {
 
 func frontCmdUsage(w io.Writer) {
 	fmt.Fprintf(w, "Usage: %s front [ <card-id> ]\n", mainProgramName)
+
+	fmt.Fprintf(w, `
+Description:
+  Presents the front of a card. The current card if no card ID is givne.
+`)
+
+	fmt.Fprintln(w, `
+Options:
+  -h, --help  Prints help message.
+`)
 }
 
 func frontCmdArgs(cmd *cmdContext) (int, bool) {

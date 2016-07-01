@@ -14,6 +14,33 @@ func init() {
 
 func rateCmdUsage(w io.Writer) {
 	fmt.Fprintf(w, "Usage: %s rate <rating>\n", mainProgramName)
+
+	fmt.Fprintf(w, `
+Description:
+  Rates and reschedules the current card.
+
+  The rating is a numeric which is 0 to 5 inclusive. The different numbers have
+  the following meanings, taken from the specification of the SuperMemo 2
+  algorithm:
+
+  5) Perfect response.
+
+  4) Correct response after a hesitation.
+
+  3) Correct response recalled with serious difficulty.
+
+  2) Incorrect response; where the correct one seemed easy to recall.
+
+  1) Incorrect response; the correct one remembered.
+
+  0) Complete blackout.
+`)
+
+	fmt.Fprintln(w, `
+Options:
+  -h, --help  Prints help message.
+`)
+
 }
 
 func rateCmdArgs(cmd *cmdContext) int {
@@ -83,7 +110,7 @@ func rateCmd(cmd *cmdContext) {
 	switch state {
 	case CARD_NEW: fallthrough;
 	case CARD_RELEARN:
-		if rating == 5 {
+		if rating >= 4 {
 			state = CARD_REVIEW
 			scheduleTime = cmd.Now().Add(time.Hour * time.Duration(24 * interval))
 		} else {

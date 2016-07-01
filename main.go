@@ -23,7 +23,7 @@ var (
 )
 
 func mainUsage(out io.Writer) {
-	fmt.Fprintf(out, "Usage: %s [ -d <deck> ] <command> ...\n", mainProgramName)
+	fmt.Fprintf(out, "Usage: %s [ <options> ] <subcommand> ...\n", mainProgramName)
 
 	// Print the usage string of each subcommand
 	cmd := cmdNewContext(dbOpenTemp())
@@ -35,6 +35,21 @@ func mainUsage(out io.Writer) {
 		line, _ := bufio.NewReader(buf).ReadString('\n')
 		fmt.Fprint(out, line)
 	}
+
+	fmt.Fprintf(out, `
+Description:
+  %s is a command-line application which manages a deck of digital flash cards.
+`, mainProgramName)
+
+	fmt.Fprintln(out, `
+Options before subcommand:
+  -h, --help  Prints help message.
+  --version   Prints version.
+  -d, --deck  Specifies path of deck database to operate upon.
+  -b, --max-relearn-backlog=<number>
+	      Limits how far back in the backlog the current card can be.
+`)
+
 }
 
 func mainArgs() ([]string) {
