@@ -15,13 +15,13 @@ func TestHelpOption(t *testing.T) {
 
 	for _, command := range cmdList {
 
-		outbuf.Reset()
-		errbuf.Reset()
-
 		cmd.Stdout = outbuf
 		cmd.Stderr = errbuf
 		
 		for _, option := range []string{ "-h", "--help" } {
+
+			outbuf.Reset()
+			errbuf.Reset()
 
 			status := cmd.Run(command.name, option)
 			if status != 0 {
