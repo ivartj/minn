@@ -76,7 +76,7 @@ func mainArgs() ([]string) {
 				os.Exit(0)
 
 			case "--version":
-				fmt.Printf("%s version %s\n")
+				fmt.Printf("%s version %s\n", mainProgramName, mainProgramVersion)
 				os.Exit(0)
 
 			case "-d", "--deck":
