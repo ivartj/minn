@@ -5,7 +5,7 @@ import (
 	"strconv"
 	"database/sql"
 	"io"
-	"ivartj/args"
+	"github.com/ivartj/minn/args"
 )
 
 func init() {

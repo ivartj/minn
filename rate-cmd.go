@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strconv"
 	"io"
-	"ivartj/args"
+	"github.com/ivartj/minn/args"
 	"time"
 )
 

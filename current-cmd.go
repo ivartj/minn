@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 	"io"
-	"ivartj/args"
+	"github.com/ivartj/minn/args"
 )
 
 func init() {

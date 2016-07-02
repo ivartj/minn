@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strconv"
 	"database/sql"
-	"ivartj/args"
+	"github.com/ivartj/minn/args"
 	"io"
 )
 

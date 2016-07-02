@@ -1,7 +1,7 @@
 package main
 
 import (
-	"ivartj/args"
+	"github.com/ivartj/minn/args"
 	"io"
 	"fmt"
 )
