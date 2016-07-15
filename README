@@ -6,6 +6,7 @@ Usage: minn current
 Usage: minn edit <card-id> <front> <back>
 Usage: minn front [ <card-id> ]
 Usage: minn help [ <subcommand> ]
+Usage: minn list
 Usage: minn migrate [ -t <to-schema-version> ]
 Usage: minn rate <rating>
 Usage: minn remove [ <card-id> ]
