@@ -15,7 +15,7 @@ func listCmdUsage(w io.Writer) {
 
 	fmt.Fprintln(w, `
 Description:
-  Lists cards by card IDs, ordered so that the earliest scheduld come first.
+  Lists cards by card IDs, ordered so that the earliest scheduled come first.
   Options can be used to control the selection of cards listed.
 
 Options:
@@ -48,6 +48,9 @@ func listCmdArgs(cmd *cmdContext) (whereClause string) {
 
 		case "--select-new":
 			whereExpressions = append(whereExpressions, "state is 0")
+
+		default:
+			cmd.Fatalf("Unrecognized option, '%s'.", tok.Arg())
 
 		}
 
