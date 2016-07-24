@@ -15,9 +15,12 @@ Description:
   minn is a spaced-repetition command-line application based on the SuperMemo 2
   algorithm which manages a deck of digital flash cards.
 
+  For now it is just a personal experiment, but I welcome you to try out the
+  code and do whatever you like with it.
+
   A deck file 'minn.deck' is created in the current directory with the 'create'
   subcommand. An alternate location for the deck file to be created or managed
-  with othere subcommands can be specified with the --deck option before the
+  with other subcommands can be specified with the --deck option before the
   subcommand.
 
   Further help for each subcommand is given by the 'help' subcommand.
@@ -29,4 +32,5 @@ Options before subcommand:
               Specifies path of deck database to operate upon.
   -b, --max-relearn-backlog=<number>
 	      Limits how far back in the backlog the current card can be.
+              The default is 10.
 

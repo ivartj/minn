@@ -40,7 +40,7 @@ func helpCmdArgs(cmd *cmdContext) (commands []string) {
 				cmd.Exit(0)
 
 			default:
-				cmd.Fatalf("Unrecognized command, '%s'.\n", tok.Arg())
+				cmd.Fatalf("Unrecognized option, '%s'.\n", tok.Arg())
 			}
 
 		} else {
